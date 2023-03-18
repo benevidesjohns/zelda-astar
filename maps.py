@@ -67,7 +67,7 @@ def dungeon1():
     )
 
 
-def dungeon_2():
+def dungeon2():
     codes = [
         'OOOOOOOOOOOOOOOOOOOOOOOOOOOO',
         'OOLLLLLOOOOOLLLOOOOOOOOOOOOO',
@@ -107,8 +107,8 @@ def dungeon_2():
 
     return Map(
         size=28,
-        start_point=(25, 14),
-        end_point=(19, 15),
+        start_point=(25, 13),
+        end_point=(2, 13),
         terrains=terrains
     )
 

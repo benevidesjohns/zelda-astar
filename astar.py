@@ -133,14 +133,14 @@ def get_clicked_pos(pos, rows, size):
 
 # Funcao principal
 def main(window, size, slowmode):
-    # map_dungeon1 = mp.dungeon1()
-    # map_dungeon1 = mp.dungeon2()
-    map_dungeon1 = mp.dungeon3()
-    grid = make_grid(size, map_dungeon1)
+    # map_dungeon = mp.dungeon1()
+    # map_dungeon = mp.dungeon2()
+    map_dungeon = mp.dungeon3()
+    grid = make_grid(size, map_dungeon)
 
     # Ponto inicial e final do mapa
-    start_point = map_dungeon1.start_point
-    end_point = map_dungeon1.end_point
+    start_point = map_dungeon.start_point
+    end_point = map_dungeon.end_point
 
     # Nodes referentes aos pontos inicial e final do mapa
     start = grid[start_point[0]][start_point[1]]
@@ -153,7 +153,7 @@ def main(window, size, slowmode):
     while run:
 
         # Desenha o grid na tela
-        draw(window, grid, map_dungeon1.size, size)
+        draw(window, grid, map_dungeon.size, size)
 
         # Gerencia os eventos do pygame
         for event in pygame.event.get():
@@ -164,7 +164,7 @@ def main(window, size, slowmode):
 
             if pygame.mouse.get_pressed()[0]:  # LEFT
                 pos = pygame.mouse.get_pos()
-                row, col = get_clicked_pos(pos, map_dungeon1.size, size)
+                row, col = get_clicked_pos(pos, map_dungeon.size, size)
                 node = grid[row][col]
                 if not start and node != end:
                     start = node
@@ -185,7 +185,7 @@ def main(window, size, slowmode):
 
                     # Executa o algoritmo da astar
                     algorithm(
-                        lambda: draw(window, grid, map_dungeon1.size, size),
+                        lambda: draw(window, grid, map_dungeon.size, size),
                         grid,
                         start,
                         end,
@@ -196,7 +196,7 @@ def main(window, size, slowmode):
                 if event.key == pygame.K_r:
                     start = None
                     end = None
-                    grid = make_grid(size, map_dungeon1)
+                    grid = make_grid(size, map_dungeon)
 
     # Encerra o jogo
     pygame.quit()
