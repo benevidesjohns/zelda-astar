@@ -1,4 +1,6 @@
 import pygame
+import sys
+import time
 from queue import PriorityQueue
 
 WIDTH = 800
@@ -31,39 +33,46 @@ class Spot:
     def get_pos(self):
         return self.row, self.col
 
+    # Closed node
     def is_closed(self):
+        return self.color == GREEN
+    
+    def make_closed(self):
+        self.color = GREEN
+
+    # Opened node
+    def is_open(self):
         return self.color == RED
 
-    def is_open(self):
-        return self.color == GREEN
-
-    def is_barrier(self):
-        return self.color == BLACK
-
-    def is_start(self):
-        return self.color == ORANGE
-
-    def is_end(self):
-        return self.color == TURQUOISE
-
-    def reset(self):
-        self.color = WHITE
-
-    def make_start(self):
-        self.color = ORANGE
-
-    def make_closed(self):
+    def make_open(self):
         self.color = RED
 
-    def make_open(self):
-        self.color = GREEN
+    # Barrier node
+    def is_barrier(self):
+        return self.color == BLACK
 
     def make_barrier(self):
         self.color = BLACK
 
+    # Start node
+    def is_start(self):
+        return self.color == ORANGE
+
+    def make_start(self):
+        self.color = ORANGE
+
+    # End node
+    def is_end(self):
+        return self.color == TURQUOISE
+    
     def make_end(self):
         self.color = TURQUOISE
 
+    # Clear node
+    def reset(self):
+        self.color = WHITE
+
+    # Make finded path
     def make_path(self):
         self.color = PURPLE
 
@@ -90,7 +99,8 @@ class Spot:
     def __lt__(self, other):
         return False
 
-
+# Distancia de Manhattan
+# A distância entre dois pontos é a soma das diferenças absolutas de suas coordenadas
 def h(p1, p2):
     x1, y1 = p1
     x2, y2 = p2
@@ -104,7 +114,7 @@ def reconstruct_path(came_from, current, draw):
         draw()
 
 
-def algorithm(draw, grid, start, end):
+def algorithm(draw, grid, start, end, slowmode):
     count = 0
     open_set = PriorityQueue()
     open_set.put((0, count, start))
@@ -117,6 +127,8 @@ def algorithm(draw, grid, start, end):
     open_set_hash = {start}
 
     while not open_set.empty():
+        if slowmode:
+            time.sleep(1)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -192,8 +204,8 @@ def get_clicked_pos(pos, rows, width):
     return row, col
 
 
-def main(win, width):
-    ROWS = 50
+def main(win, width, slowmode):
+    ROWS = 15
     grid = make_grid(ROWS, width)
 
     start = None
@@ -238,7 +250,7 @@ def main(win, width):
                             spot.update_neighbors(grid)
 
                     algorithm(lambda: draw(win, grid, ROWS, width),
-                              grid, start, end)
+                              grid, start, end, slowmode)
 
                 if event.key == pygame.K_c:
                     start = None
@@ -248,4 +260,11 @@ def main(win, width):
     pygame.quit()
 
 
-main(WIN, WIDTH)
+if __name__ == '__main__':
+
+    # Set slow mode
+    slowmode = False
+    if len(sys.argv) > 1:
+        slowmode = True
+
+    main(WIN, WIDTH, slowmode)
