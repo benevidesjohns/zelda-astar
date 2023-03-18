@@ -18,6 +18,7 @@ class Map:
 def hyrule():
     pass
 
+
 def dungeon1():
 
     codes = [
@@ -67,6 +68,47 @@ def dungeon1():
 def dungeon_2():
     pass
 
-def dungeon_3():
-    pass
+def dungeon3():
+    codes = [
+        'OOOOOOOOOOOOOOOOOOOOOOOOOOOO',
+        'OOOOOOOOOOOOOOOOOOOOOOOOOOOO',
+        'OOOOOOOOOOOOOOOOOOOOOOOOOOOO',
+        'OOOLLLLLLLLLLLLLLLLLLLLLLOOO',
+        'OOOLOOOOOOOOOOOLOOOOOOOOLOOO',
+        'OOOLOOOOOOOOOOOLOOOOOOOOLOOO',
+        'OOOLOOLLLOLLLOLLLOLLLOOOLOOO',
+        'OOOLOOLLLLLLLOLLLOLLLOOOLOOO',
+        'OOOLOOLLLOLLLOLLLOLLLOOOLOOO',
+        'OOOLOOOOOOOLOOOLOOOLOOOOLOOO',
+        'OOOLOOLLLOOLOOOLOOOLOLLOLOOO',
+        'OOOLLLLLLLLLLLLLLLLLLLLOLOOO',
+        'OOOLOOLLLOOLOOOOOOOLOLLOLOOO',
+        'OOOLOOOLOOOLOOOOOOOLOOOOLOOO',
+        'OOOLOOLLLOLLLOLLLOLLLOOOLOOO',
+        'OOOLOOLLLOLLLLLLLOLLLOOOLOOO',
+        'OOOLOOLLLOLLLOLLLOLLLOOOLOOO',
+        'OOOLOOOLOOOOOOOLOOOOOOOOLOOO',
+        'OOOLOOLLLOOOOLLLLLOOLLLOLOOO',
+        'OOOLOOLLLOOOOLLLLLOOLLLOLOOO',
+        'OOOLOOOOOOOOOOOOOOOOOLOOLOOO',
+        'OOOLLLLLLLLLLLLLLLLLLLLLLOOO',
+        'OOOOOOLOOOOOOOLOOOOOOLOOOOOO',
+        'OOOOOOLOOOOOOOLOOOOOOLOOOOOO',
+        'OOOOLLLLLOOOLLLLLOOLLLLLOOOO',
+        'OOOOLLLLLOOOLLLLLOOLLLLLOOOO',
+        'OOOOLLLLLOOOLLLLLOOLLLLLOOOO',
+        'OOOOOOOOOOOOOOOOOOOOOOOOOOOO',
+    ]
 
+    terrains = []
+    for i, row in enumerate(codes):
+        terrains.append([])
+        for code in row:
+            terrains[i].append(get_terrain(code))
+
+    return Map(
+        size = 28,
+        start_point = (25, 14),
+        end_point = (19, 15),
+        terrains = terrains
+    )

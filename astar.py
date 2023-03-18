@@ -133,7 +133,9 @@ def get_clicked_pos(pos, rows, size):
 
 # Funcao principal
 def main(window, size, slowmode):
-    map_dungeon1 = mp.dungeon1()
+    # map_dungeon1 = mp.dungeon1()
+    # map_dungeon1 = mp.dungeon2()
+    map_dungeon1 = mp.dungeon3()
     grid = make_grid(size, map_dungeon1)
 
     # Ponto inicial e final do mapa
