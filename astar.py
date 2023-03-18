@@ -1,102 +1,27 @@
-import pygame
+from node import Node
 from queue import PriorityQueue
+import maps as mp
+import pygame
+import sys
+import time
 
-WIDTH = 800
-WIN = pygame.display.set_mode((WIDTH, WIDTH))
+# Definicoes da janela do pygame
+WINDOW_SIZE = 840
+WINDOW = pygame.display.set_mode((WINDOW_SIZE, WINDOW_SIZE))
 pygame.display.set_caption("Zelda A*")
 
-RED = (255, 0, 0)
-GREEN = (0, 255, 0)
-BLUE = (0, 255, 0)
-YELLOW = (255, 255, 0)
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-PURPLE = (128, 0, 128)
-ORANGE = (255, 165, 0)
-GREY = (128, 128, 128)
-TURQUOISE = (64, 224, 208)
+# Cores da janela do pygame
+LINE_COLOR = (128, 128, 128)
+BACKGROUND_COLOR = (255, 255, 255)
 
-
-class Spot:
-    def __init__(self, row, col, width, total_rows):
-        self.row = row
-        self.col = col
-        self.x = row * width
-        self.y = col * width
-        self.color = WHITE
-        self.neighbors = []
-        self.width = width
-        self.total_rows = total_rows
-
-    def get_pos(self):
-        return self.row, self.col
-
-    def is_closed(self):
-        return self.color == RED
-
-    def is_open(self):
-        return self.color == GREEN
-
-    def is_barrier(self):
-        return self.color == BLACK
-
-    def is_start(self):
-        return self.color == ORANGE
-
-    def is_end(self):
-        return self.color == TURQUOISE
-
-    def reset(self):
-        self.color = WHITE
-
-    def make_start(self):
-        self.color = ORANGE
-
-    def make_closed(self):
-        self.color = RED
-
-    def make_open(self):
-        self.color = GREEN
-
-    def make_barrier(self):
-        self.color = BLACK
-
-    def make_end(self):
-        self.color = TURQUOISE
-
-    def make_path(self):
-        self.color = PURPLE
-
-    def draw(self, win):
-        pygame.draw.rect(
-            win, self.color, (self.x, self.y, self.width, self.width))
-
-    def update_neighbors(self, grid):
-        self.neighbors = []
-        # DOWN
-        if self.row < self.total_rows - 1 and not grid[self.row + 1][self.col].is_barrier():
-            self.neighbors.append(grid[self.row + 1][self.col])
-
-        if self.row > 0 and not grid[self.row - 1][self.col].is_barrier():  # UP
-            self.neighbors.append(grid[self.row - 1][self.col])
-
-        # RIGHT
-        if self.col < self.total_rows - 1 and not grid[self.row][self.col + 1].is_barrier():
-            self.neighbors.append(grid[self.row][self.col + 1])
-
-        if self.col > 0 and not grid[self.row][self.col - 1].is_barrier():  # LEFT
-            self.neighbors.append(grid[self.row][self.col - 1])
-
-    def __lt__(self, other):
-        return False
-
-
+# Funcao da Heuristica -> Distancia de Manhattan
 def h(p1, p2):
     x1, y1 = p1
     x2, y2 = p2
     return abs(x1 - x2) + abs(y1 - y2)
 
 
+# Atualiza os nodes que definem o caminho encontrado pelo algoritmo
 def reconstruct_path(came_from, current, draw):
     while current in came_from:
         current = came_from[current]
@@ -104,148 +29,182 @@ def reconstruct_path(came_from, current, draw):
         draw()
 
 
-def algorithm(draw, grid, start, end):
-    count = 0
-    open_set = PriorityQueue()
-    open_set.put((0, count, start))
+# Astar algorithm
+def algorithm(draw, grid, start, end, slowmode):
     came_from = {}
-    g_score = {spot: float("inf") for row in grid for spot in row}
+    g_count = 0
+
+    # Cria uma fila de prioridade e adiciona o node inicial (lista fechada)
+    closed_list = PriorityQueue()
+    closed_list.put((0, g_count, start))
+
+    open_list = {start}
+
+    # Calcula o G Score para cada node
+    g_score = {node: float("inf") for row in grid for node in row}
     g_score[start] = 0
-    f_score = {spot: float("inf") for row in grid for spot in row}
+
+    # Calcula o F Score para cada node
+    f_score = {node: float("inf") for row in grid for node in row}
     f_score[start] = h(start.get_pos(), end.get_pos())
 
-    open_set_hash = {start}
+    # Executa enquanto a fila de prioridade nao estiver vazia
+    while not closed_list.empty():
+        if slowmode:
+            time.sleep(1)
 
-    while not open_set.empty():
+        # Verifica se deve sair do jogo
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
 
-        current = open_set.get()[2]
-        open_set_hash.remove(current)
+        # Pega o node com mais prioridade da fila e remove o mesmo do set
+        current = closed_list.get()[2]
+        open_list.remove(current)
 
+        # Verifica se chegou no objetivo e exibe o caminho ate o mesmo
         if current == end:
             reconstruct_path(came_from, end, draw)
-            end.make_end()
             return True
 
         for neighbor in current.neighbors:
-            temp_g_score = g_score[current] + 1
+            temp_g_score = g_score[current] + neighbor.terrain.cost
 
             if temp_g_score < g_score[neighbor]:
                 came_from[neighbor] = current
+
+                # Define o G Score e o F Score para cada vizinho
                 g_score[neighbor] = temp_g_score
-                f_score[neighbor] = temp_g_score + \
-                    h(neighbor.get_pos(), end.get_pos())
-                if neighbor not in open_set_hash:
-                    count += 1
-                    open_set.put((f_score[neighbor], count, neighbor))
-                    open_set_hash.add(neighbor)
-                    neighbor.make_open()
+                f_score[neighbor] = temp_g_score + h(neighbor.get_pos(), end.get_pos())
 
-        draw()
-
-        if current != start:
-            current.make_closed()
+                # Veifica se o vizinho nao esta na lista aberta
+                if neighbor not in open_list:
+                    g_count += temp_g_score
+                    closed_list.put((f_score[neighbor], g_count, neighbor))
+                    open_list.add(neighbor)
 
     return False
 
 
-def make_grid(rows, width):
+# Constroi o grid (matriz) com os nodes definidos no mapa
+def make_grid(window_size, map):
     grid = []
-    gap = width // rows
-    for i in range(rows):
+    gap = window_size // map.size
+    for i, row in enumerate(map.terrains):
         grid.append([])
-        for j in range(rows):
-            spot = Spot(i, j, gap, rows)
-            grid[i].append(spot)
-
+        for j, terrain in enumerate(row):
+            node = Node(i, j, gap, terrain, map.size)
+            grid[i].append(node)
+    
     return grid
 
 
-def draw_grid(win, rows, width):
-    gap = width // rows
+# Desenha a grade
+def draw_grid(window, rows, window_size):
+    gap = window_size // rows
     for i in range(rows):
-        pygame.draw.line(win, GREY, (0, i * gap), (width, i * gap))
+        pygame.draw.line(window, LINE_COLOR, (0, i * gap), (window_size, i * gap))
         for j in range(rows):
-            pygame.draw.line(win, GREY, (j * gap, 0), (j * gap, width))
+            pygame.draw.line(window, LINE_COLOR, (j * gap, 0), (j * gap, window_size))
 
 
-def draw(win, grid, rows, width):
-    win.fill(WHITE)
+# Desenha na tela
+def draw(window, grid, rows, size):
+    window.fill(BACKGROUND_COLOR)
 
     for row in grid:
-        for spot in row:
-            spot.draw(win)
+        for node in row:
+            node.draw(window)
 
-    draw_grid(win, rows, width)
+    draw_grid(window, rows, size)
     pygame.display.update()
 
 
-def get_clicked_pos(pos, rows, width):
-    gap = width // rows
+# Captura a posicao que o usuario clicou no grid
+def get_clicked_pos(pos, rows, size):
+    gap = size // rows
     y, x = pos
 
-    row = y // gap
-    col = x // gap
+    row = x // gap
+    col = y // gap
 
     return row, col
 
 
-def main(win, width):
-    ROWS = 50
-    grid = make_grid(ROWS, width)
+# Funcao principal
+def main(window, size, slowmode):
+    map_dungeon1 = mp.dungeon1()
+    grid = make_grid(size, map_dungeon1)
 
-    start = None
-    end = None
+    # Ponto inicial e final do mapa
+    start_point = map_dungeon1.start_point
+    end_point = map_dungeon1.end_point
+
+    # Nodes referentes aos pontos inicial e final do mapa
+    start = grid[start_point[0]][start_point[1]]
+    end = grid[end_point[0]][end_point[1]]
+
+    start.make_start()
+    end.make_end()
 
     run = True
     while run:
-        draw(win, grid, ROWS, width)
+
+        # Desenha o grid na tela
+        draw(window, grid, map_dungeon1.size, size)
+
+        # Gerencia os eventos do pygame
         for event in pygame.event.get():
+
+            # Encerra o jogo
             if event.type == pygame.QUIT:
                 run = False
 
             if pygame.mouse.get_pressed()[0]:  # LEFT
                 pos = pygame.mouse.get_pos()
-                row, col = get_clicked_pos(pos, ROWS, width)
-                spot = grid[row][col]
-                if not start and spot != end:
-                    start = spot
+                row, col = get_clicked_pos(pos, map_dungeon1.size, size)
+                node = grid[row][col]
+                if not start and node != end:
+                    start = node
                     start.make_start()
 
-                elif not end and spot != start:
-                    end = spot
+                elif not end and node != start:
+                    end = node
                     end.make_end()
 
-                elif spot != end and spot != start:
-                    spot.make_barrier()
-
-            elif pygame.mouse.get_pressed()[2]:  # RIGHT
-                pos = pygame.mouse.get_pos()
-                row, col = get_clicked_pos(pos, ROWS, width)
-                spot = grid[row][col]
-                spot.reset()
-                if spot == start:
-                    start = None
-                elif spot == end:
-                    end = None
-
+            # Verifica as teclas do teclado
             if event.type == pygame.KEYDOWN:
+
+                # Inicia o jogo ao pressionar a tecla SPACE
                 if event.key == pygame.K_SPACE and start and end:
                     for row in grid:
-                        for spot in row:
-                            spot.update_neighbors(grid)
+                        for node in row:
+                            node.update_neighbors(grid)
 
-                    algorithm(lambda: draw(win, grid, ROWS, width),
-                              grid, start, end)
+                    # Executa o algoritmo da astar
+                    algorithm(
+                        lambda: draw(window, grid, map_dungeon1.size, size),
+                        grid,
+                        start,
+                        end,
+                        slowmode
+                    )
 
-                if event.key == pygame.K_c:
+                # Reinicia o jogo ao pressionar a tecla R
+                if event.key == pygame.K_r:
                     start = None
                     end = None
-                    grid = make_grid(ROWS, width)
+                    grid = make_grid(size, map_dungeon1)
 
+    # Encerra o jogo
     pygame.quit()
 
 
-main(WIN, WIDTH)
+if __name__ == '__main__':
+
+    # Set slow mode
+    slowmode = False
+    if len(sys.argv) > 1:
+        slowmode = True
+
+    main(WINDOW, WINDOW_SIZE, slowmode)
