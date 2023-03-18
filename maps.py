@@ -1,5 +1,6 @@
 from terrain import get_terrain
 
+
 class Map:
 
     def __init__(self, size, start_point, end_point, terrains):
@@ -59,14 +60,58 @@ def dungeon1():
             terrains[i].append(get_terrain(code))
 
     return Map(
-        size = 28,
-        start_point = (26, 14),
-        end_point = (3, 13),
-        terrains = terrains
+        size=28,
+        start_point=(26, 14),
+        end_point=(3, 13),
+        terrains=terrains
     )
 
+
 def dungeon_2():
-    pass
+    codes = [
+        'OOOOOOOOOOOOOOOOOOOOOOOOOOOO',
+        'OOLLLLLOOOOOLLLOOOOOOOOOOOOO',
+        'OOLLLLLLLLOOLLLOOOLLLLOOOOOO',
+        'OOLLLLLOOLOOLLLOOOOOOLOOOOOO',
+        'OOOOLOOOOLOOOLOOOOOOOLOLLLLO',
+        'OOOOLOOOOLLLLLLLLLLOOLLLLLLO',
+        'OOOOLOOOOOOOOLOOOOLOOOOLLLLO',
+        'OOLLLLLOOOOOOOOOOOLOOOOLLLLO',
+        'OOLLLLLLLLLLLLLLLLLOOOOOOLOO',
+        'OOLLLLLOOOOOOOOOOOOOOOOOOLOO',
+        'OOOOLOOOOOOOOOOLLLLLLLLOOLOO',
+        'OOOOLOOOOOOOOOOLLLLLLLLOOLOO',
+        'OOOOLOOLLLLLLOOLLLLLLLLOOLOO',
+        'OOLLLLLLLLLLLLLLOOOLOOOOOLOO',
+        'OOOOOOOLLLLLLOOOOOOLOOOOOLOO',
+        'OOOOLOOOOLOOOOOOOLLLLLOOOLOO',
+        'OOOOLOOOOLOOOOOOOLLLLLLLLLOO',
+        'OOOOLOOOOLLLLLOOOLLLLLOOOLOO',
+        'OOLLLLOOOLOOOLOOOOOLOOOOOLOO',
+        'OOLOOLOOOLOOOLOOOOOLOOOOOLOO',
+        'OOLOOLOOLLLLLLLLLLLLLLLLLLOO',
+        'OOLOOOOOOOOOOOOOOOLOOOOLOOOO',
+        'OOLLLLLLOOLLLLLLLLLLLLOLOOOO',
+        'OOLOOLLLOOLOOLOOOOLOOOOLOOOO',
+        'OOLOOLLLOOLOOLOOOOLOOLLLLLOO',
+        'OOLOOLLLLLLOLLLOOOLLLLLLLLOO',
+        'OOOOOOOOOOOOLLLOOOOOOOOOOOOO',
+        'OOOOOOOOOOOOOOOOOOOOOOOOOOOO',
+    ]
+
+    terrains = []
+    for i, row in enumerate(codes):
+        terrains.append([])
+        for code in row:
+            terrains[i].append(get_terrain(code))
+
+    return Map(
+        size=28,
+        start_point=(25, 14),
+        end_point=(19, 15),
+        terrains=terrains
+    )
+
 
 def dungeon3():
     codes = [
@@ -107,8 +152,8 @@ def dungeon3():
             terrains[i].append(get_terrain(code))
 
     return Map(
-        size = 28,
-        start_point = (25, 14),
-        end_point = (19, 15),
-        terrains = terrains
+        size=28,
+        start_point=(25, 14),
+        end_point=(19, 15),
+        terrains=terrains
     )
