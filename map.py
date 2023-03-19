@@ -3,12 +3,25 @@ import os
 
 class Map:
 
-    def __init__(self, size, start_point, end_point, terrains):
+    def __init__(self, name, size, start_point, end_point, terrains):
+        self.name = name
         self.size = size
         self.start_point = start_point
         self.end_point = end_point
         self.terrains = terrains
         self.nodes = []
+        self.points = {
+            'dungeon_1': (32, 5),
+            'dungeon_2': (1, 24),
+            'dungeon_3': (17, 39),
+            'link': self.start_point,
+            'master_sword': (1, 2),
+            'entrada_lost_woods': (5, 6)
+        }
+
+    
+    def is_dungeon(self):
+        return self.size == 28
 
 
     def set_start_point(self, point):
@@ -68,10 +81,11 @@ def hyrule():
     terrains = get_map_terrains(codes)
 
     return Map(
-        size=42,
-        start_point=(37, 20),
-        end_point=(7, 6),
-        terrains=terrains
+        name = 'hyrule',
+        size = 42,
+        start_point = (27, 24),
+        end_point = (7, 6),
+        terrains = terrains
     )
 
 
@@ -80,10 +94,11 @@ def dungeon1():
     terrains = get_map_terrains(codes)
 
     return Map(
-        size=28,
-        start_point=(26, 14),
-        end_point=(3, 13),
-        terrains=terrains
+        name = 'dungeon_1',
+        size = 28,
+        start_point = (26, 14),
+        end_point = (3, 13),
+        terrains = terrains
     )
 
 
@@ -92,10 +107,11 @@ def dungeon2():
     terrains = get_map_terrains(codes)
 
     return Map(
-        size=28,
-        start_point=(25, 13),
-        end_point=(2, 13),
-        terrains=terrains
+        name = 'dungeon_2',
+        size = 28,
+        start_point = (25, 13),
+        end_point = (2, 13),
+        terrains = terrains
     )
 
 
@@ -104,8 +120,9 @@ def dungeon3():
     terrains = get_map_terrains(codes)
 
     return Map(
-        size=28,
-        start_point=(25, 14),
-        end_point=(19, 15),
-        terrains=terrains
+        name = 'dungeon_3',
+        size = 28,
+        start_point = (25, 14),
+        end_point = (19, 15),
+        terrains = terrains
     )

@@ -26,6 +26,12 @@ class Node:
             pygame.Rect(self.x, self.y, self.size, self.size)
         )
 
+    
+    # Desenha uma imagem na mesma posicao do node
+    def draw_image(self, window, image):
+        img = pygame.image.load(f'img/{image}_18x18.png')
+        window.blit(img, (self.x, self.y))
+
 
     # Altera a cor do terreno para representar o caminho que o algoritmo encontrou
     def make_path(self):

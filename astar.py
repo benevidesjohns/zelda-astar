@@ -1,14 +1,13 @@
 from node import Node
 from queue import PriorityQueue
-import maps as mp
+import map as mp
 import pygame
 
 
 # Definicoes da janela do pygame
-WIDTH = 756
-# WIDTH2 = 504
+# WIDTH = 756 # Hyrule
+WIDTH = 504 # Dungeons
 WINDOW = pygame.display.set_mode((WIDTH, WIDTH))
-# WINDOW2 = pygame.display.set_mode((WIDTH2, WIDTH2))
 pygame.display.set_caption("Zelda A*")
 
 # Cores da janela do pygame
@@ -99,11 +98,6 @@ def make_grid(map, node_size):
     return grid
 
 
-# Desenha uma imagem na tela
-def draw_image(window, image, position):
-    img = pygame.image.load(f'img/{image}.png')
-    window.blit(img, position)
-
 # Desenha a grade
 def draw_grid(window, rows, width, node_size):
     for i in range(rows):
@@ -126,20 +120,27 @@ def draw(window, width, map, node_size):
 
     draw_grid(window, map.size, width, node_size)
     
-    point = {
-        'DUNGEON1': (32, 5),
-        'DUNGEON2': (1, 24),
-        'DUNGEON3': (17, 39),
-        'START': (27, 24),
-        'MASTER_SWORD': (1, 2),
-        'PORTAL': (5, 6)
-    }
-
-    for position in point.values():
-        (x, y) = position
+    # Desenha as imagens no mapa de Hyrule
+    if not map.is_dungeon():
+        for local, coord in map.points.items():
+            (x, y) = coord
+            node = map.nodes[x][y]
+            if 'dungeon' in local:
+                node.draw_image(window, 'entrada_dungeon')
+            else:
+                node.draw_image(window, local)
+    
+    # Desenha as imagens no mapa da Dungeon
+    else:
+        (x, y) = map.start_point
         node = map.nodes[x][y]
-        draw_image(window, 'link_18x18', (node.x, node.y))
+        node.draw_image(window, 'entrada_dungeon')
 
+        (x, y) = map.end_point
+        node = map.nodes[x][y]
+        node.draw_image(window, f'pingente_{map.name}')
+
+    # Atualiza a tela
     pygame.display.update()
 
 
@@ -156,10 +157,10 @@ def get_clicked_pos(pos, rows, size):
 
 # Funcao principal
 def main(window, width):
-    map_dungeon = mp.hyrule()
+    # map_dungeon = mp.hyrule()
     # map_dungeon = mp.dungeon1()
     # map_dungeon = mp.dungeon2()
-    # map_dungeon = mp.dungeon3()
+    map_dungeon = mp.dungeon3()
     grid = make_grid(map_dungeon, 18)
     map_dungeon.set_nodes(grid)
 
