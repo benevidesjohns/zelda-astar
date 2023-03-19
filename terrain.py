@@ -22,7 +22,7 @@ def get_terrain(code):
         return Terrain(
             code,
             cost = 10,
-            color = (0, 173, 92)
+            color = (51, 204, 51)
         )
     
     # Areia
@@ -38,7 +38,7 @@ def get_terrain(code):
         return Terrain(
             code,
             cost = 100,
-            color = (4, 176, 70)
+            color = (0, 153, 0)
         )
     
     # Montanha
@@ -54,7 +54,8 @@ def get_terrain(code):
         return Terrain(
             code,
             cost = 180,
-            color = (88, 140, 205)
+            # color = (88, 140, 205)
+            color = (51, 204, 255)
         )
     
     # Piso da Dungeon

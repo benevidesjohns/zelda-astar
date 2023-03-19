@@ -35,6 +35,7 @@ class Node:
             color = (128, 0, 128)
         )
 
+
     # Altera a cor do terreno para representar o caminho que o algoritmo encontrou
     def make_start(self):
         self.terrain = Terrain(
@@ -42,6 +43,7 @@ class Node:
             cost = self.terrain.cost,
             color = (255, 165, 0)
         )
+
 
     # Altera a cor do terreno para representar o caminho que o algoritmo encontrou
     def make_end(self):
