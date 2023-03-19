@@ -5,8 +5,8 @@ import pygame
 
 
 # Definicoes da janela do pygame
-# WIDTH = 756 # Hyrule
-WIDTH = 504 # Dungeons
+WIDTH = 756  # Hyrule
+# WIDTH = 504  # Dungeons
 WINDOW = pygame.display.set_mode((WIDTH, WIDTH))
 pygame.display.set_caption("Zelda A*")
 
@@ -24,10 +24,14 @@ def h(p1, p2):
 
 # Atualiza os nodes que definem o caminho encontrado pelo algoritmo
 def reconstruct_path(came_from, current, draw):
-    while current in came_from:
-        current = came_from[current]
-        current.make_path()
+    for node in came_from:
+        node.make_path()
         draw()
+
+    # while current in came_from:
+    #     current = came_from[current]
+    #     current.make_path()
+    #     draw()
 
 
 # Astar algorithm
@@ -63,7 +67,20 @@ def algorithm(draw, grid, start, end):
 
         # Verifica se chegou no objetivo e exibe o caminho ate o mesmo
         if current == end:
-            reconstruct_path(came_from, end, draw)
+            came_from_list = [current]
+            while current in came_from:
+                current = came_from[current]
+                came_from_list.append(current)
+            reconstruct_path(reversed(came_from_list), came_from_list[-1], draw)
+
+            # for node in reversed(came_from_list):
+            #     print(node.get_pos())
+
+            # for item in came_from.items():
+            #     (a, b) = item
+            #     print(a.get_pos(), b.get_pos())
+
+            # reconstruct_path(came_from, end, draw)
             return True
 
         for neighbor in current.neighbors:
@@ -119,7 +136,7 @@ def draw(window, width, map, node_size):
             node.draw(window)
 
     draw_grid(window, map.size, width, node_size)
-    
+
     # Desenha as imagens no mapa de Hyrule
     if not map.is_dungeon():
         for local, coord in map.points.items():
@@ -129,7 +146,7 @@ def draw(window, width, map, node_size):
                 node.draw_image(window, 'entrada_dungeon')
             else:
                 node.draw_image(window, local)
-    
+
     # Desenha as imagens no mapa da Dungeon
     else:
         (x, y) = map.start_point
@@ -157,26 +174,26 @@ def get_clicked_pos(pos, rows, size):
 
 # Funcao principal
 def main(window, width):
-    # map_dungeon = mp.hyrule()
+    map_dungeon = mp.hyrule()
     # map_dungeon = mp.dungeon1()
     # map_dungeon = mp.dungeon2()
-    map_dungeon = mp.dungeon3()
+    # map_dungeon = mp.dungeon3()
     grid = make_grid(map_dungeon, 18)
     map_dungeon.set_nodes(grid)
 
     # Ponto inicial e final do mapa
-    # start_point = map_dungeon.start_point
-    # end_point = map_dungeon.end_point
+    start_point = map_dungeon.start_point
+    end_point = map_dungeon.end_point
 
     # Nodes referentes aos pontos inicial e final do mapa
-    # start = grid[start_point[0]][start_point[1]]
-    # end = grid[end_point[0]][end_point[1]]
+    start = grid[start_point[0]][start_point[1]]
+    end = grid[end_point[0]][end_point[1]]
 
-    # start.make_start()
-    # end.make_end()
+    start.make_start()
+    end.make_end()
 
-    start = None
-    end = None
+    # start = None
+    # end = None
 
     run = True
     while run:
@@ -228,8 +245,6 @@ def main(window, width):
                     end = None
                     grid = make_grid(map_dungeon, 18)
                     map_dungeon.set_nodes(grid)
-
-
 
     # Encerra o jogo
     pygame.quit()

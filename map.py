@@ -1,6 +1,7 @@
 from terrain import get_terrain
 import os
 
+
 class Map:
 
     def __init__(self, name, size, start_point, end_point, terrains):
@@ -19,20 +20,16 @@ class Map:
             'entrada_lost_woods': (5, 6)
         }
 
-    
     def is_dungeon(self):
         return self.size == 28
-
 
     def set_start_point(self, point):
         x, y = point
         self.start_point = (x, y)
 
-
     def set_end_point(self, point):
         x, y = point
         self.end_point = (x, y)
-
 
     def set_nodes(self, nodes):
         self.nodes = nodes
@@ -72,7 +69,7 @@ def get_map_terrains(codes):
         terrains.append([])
         for code in row:
             terrains[i].append(get_terrain(code))
-    
+
     return terrains
 
 
@@ -81,11 +78,11 @@ def hyrule():
     terrains = get_map_terrains(codes)
 
     return Map(
-        name = 'hyrule',
-        size = 42,
-        start_point = (27, 24),
-        end_point = (7, 6),
-        terrains = terrains
+        name='hyrule',
+        size=42,
+        start_point=(27, 24),
+        end_point=(5, 6),
+        terrains=terrains
     )
 
 
@@ -94,11 +91,11 @@ def dungeon1():
     terrains = get_map_terrains(codes)
 
     return Map(
-        name = 'dungeon_1',
-        size = 28,
-        start_point = (26, 14),
-        end_point = (3, 13),
-        terrains = terrains
+        name='dungeon_1',
+        size=28,
+        start_point=(26, 14),
+        end_point=(3, 13),
+        terrains=terrains
     )
 
 
@@ -107,11 +104,11 @@ def dungeon2():
     terrains = get_map_terrains(codes)
 
     return Map(
-        name = 'dungeon_2',
-        size = 28,
-        start_point = (25, 13),
-        end_point = (2, 13),
-        terrains = terrains
+        name='dungeon_2',
+        size=28,
+        start_point=(25, 13),
+        end_point=(2, 13),
+        terrains=terrains
     )
 
 
@@ -120,9 +117,9 @@ def dungeon3():
     terrains = get_map_terrains(codes)
 
     return Map(
-        name = 'dungeon_3',
-        size = 28,
-        start_point = (25, 14),
-        end_point = (19, 15),
-        terrains = terrains
+        name='dungeon_3',
+        size=28,
+        start_point=(25, 14),
+        end_point=(19, 15),
+        terrains=terrains
     )
