@@ -22,26 +22,33 @@ class Map:
             'entrada_lost_woods': (5, 6)
         }
 
+    # Verifica se o mapa é uma dungeon
     def is_dungeon(self):
         return self.size == 28
 
+    # Seta um ponto inicial no mapa
     def set_start_point(self, point):
         x, y = point
         self.start_point = (x, y)
 
+    # Seta um ponto final no mapa
     def set_end_point(self, point):
         x, y = point
         self.end_point = (x, y)
 
+    # Seta uma lista de nodes no mapa
     def set_nodes(self, nodes):
         self.nodes = nodes
 
+    # Seta os nodes iniciais e finais do mapa
     def set_start_end_nodes(self):
         (x, y) = self.start_point
         self.start_node = self.nodes[x][y]
 
         (x, y) = self.end_point
         self.end_node = self.nodes[x][y]
+
+# Retorna os códigos de um mapa
 
 
 def get_map_code(map_name):
@@ -52,6 +59,7 @@ def get_map_code(map_name):
         'DUNGEON3': [],
     }
 
+    # Lê o arquivo com os códigos dos mapas
     with open(f'{os.getcwd()}/maps_codes.txt') as file:
         lines = file.readlines()
         for line in lines:
@@ -69,7 +77,10 @@ def get_map_code(map_name):
             else:
                 map_code[current_map].append(line)
 
+    # Retorna um dicionário com o nome e os códigos do mapa
     return map_code[map_name]
+
+# Retorna os terrenos do mapa
 
 
 def get_map_terrains(codes):
@@ -80,6 +91,8 @@ def get_map_terrains(codes):
             terrains[i].append(get_terrain(code))
 
     return terrains
+
+# Retorna o mapa hyrule
 
 
 def hyrule():
