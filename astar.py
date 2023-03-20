@@ -26,13 +26,22 @@ def h(p1, p2):
 
 
 # Atualiza os nodes que definem o caminho encontrado pelo algoritmo
-def reconstruct_path(path, draw, player_group):
+def reconstruct_path(path, reverse_path, draw, player_group, is_dungeon):
+    # Percorre ate o ponto final
     for node in path:
         player = Player((node.x, node.y))
         player_group.empty()
         player_group.add(player)
         draw()
-
+    
+    # Volta para o ponto inicial
+    if is_dungeon:
+        pygame.time.delay(200) # Delay pra pegar o pingente
+        for node in reverse_path:
+            player = Player((node.x, node.y))
+            player_group.empty()
+            player_group.add(player)
+            draw()
 
 # Astar algorithm
 def algorithm(draw, grid, start, end, player_group):
@@ -76,7 +85,14 @@ def algorithm(draw, grid, start, end, player_group):
                 came_from_list.append(current)
 
             # Reconstruct path between start and end points
-            reconstruct_path(reversed(came_from_list), draw, player_group)
+            reconstruct_path(
+                reversed(came_from_list),
+                came_from_list,
+                draw,
+                player_group,
+                map.is_dungeon()
+            )
+
             break
 
         # Calcula o F, G e H dos vizinhos do node atual
@@ -111,7 +127,7 @@ def make_grid(map, node_size):
 
 # Desenha a grade
 def draw_grid(window, rows, width, node_size):
-    for i in range(rows):
+    for i in range(rows + 1):
         pygame.draw.line(
             window, LINE_COLOR,  (0, i * node_size), (width, i * node_size)
         )
@@ -182,8 +198,8 @@ def make_start(x, y):
 if __name__ == '__main__':
 
     # Define o mapa
-    map = mp.hyrule()
-    # map = mp.dungeon1()
+    # map = mp.hyrule()
+    map = mp.dungeon1()
     # map = mp.dungeon2()
     # map = mp.dungeon3()
 
