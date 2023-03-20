@@ -2,17 +2,20 @@ from node import Node
 from queue import PriorityQueue
 import map as mp
 import pygame
+import sys
 
-
-# Definicoes da janela do pygame
-WIDTH = 756  # Hyrule
-# WIDTH = 504  # Dungeons
-WINDOW = pygame.display.set_mode((WIDTH, WIDTH))
-pygame.display.set_caption("Zelda A*")
-
-# Cores da janela do pygame
+# Constantes
 LINE_COLOR = (70, 70, 70)
 BACKGROUND_COLOR = (255, 255, 255)
+
+
+class Player(pygame.sprite.Sprite):
+    
+    def __init__(self, position):
+        super().__init__()
+        self.image = pygame.image.load('img/link_18x18.png')
+        self.rect = self.image.get_rect()
+        self.rect.topleft = position
 
 
 # Funcao Heuristica -> Distancia de Manhattan
@@ -23,19 +26,16 @@ def h(p1, p2):
 
 
 # Atualiza os nodes que definem o caminho encontrado pelo algoritmo
-def reconstruct_path(came_from, current, draw):
-    for node in came_from:
-        node.make_path()
+def reconstruct_path(path, draw, player_group):
+    for node in path:
+        player = Player((node.x, node.y))
+        player_group.empty()
+        player_group.add(player)
         draw()
-
-    # while current in came_from:
-    #     current = came_from[current]
-    #     current.make_path()
-    #     draw()
 
 
 # Astar algorithm
-def algorithm(draw, grid, start, end):
+def algorithm(draw, grid, start, end, player_group):
     came_from = {}
     g_count = 0
 
@@ -60,47 +60,41 @@ def algorithm(draw, grid, start, end):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
+                sys.exit()
 
-        # Pega o node com mais prioridade da fila e remove o mesmo do set
+        # Pega o node com mais prioridade da lista fechada e o remove da lista aberta
         current = closed_list.get()[2]
         open_list.remove(current)
 
-        # Verifica se chegou no objetivo e exibe o caminho ate o mesmo
+        # Verifica se chegou no objetivo e constroi o caminho ate o mesmo
         if current == end:
+
+            # Convert came_from dict in a list
             came_from_list = [current]
             while current in came_from:
                 current = came_from[current]
                 came_from_list.append(current)
-            reconstruct_path(reversed(came_from_list), came_from_list[-1], draw)
 
-            # for node in reversed(came_from_list):
-            #     print(node.get_pos())
+            # Reconstruct path between start and end points
+            reconstruct_path(reversed(came_from_list), draw, player_group)
+            break
 
-            # for item in came_from.items():
-            #     (a, b) = item
-            #     print(a.get_pos(), b.get_pos())
-
-            # reconstruct_path(came_from, end, draw)
-            return True
-
+        # Calcula o F, G e H dos vizinhos do node atual
         for neighbor in current.neighbors:
-            temp_g_score = g_score[current] + neighbor.terrain.cost
+            temp_g = g_score[current] + neighbor.terrain.cost
 
-            if temp_g_score < g_score[neighbor]:
+            if temp_g < g_score[neighbor]:
                 came_from[neighbor] = current
 
-                # Define o G Score e o F Score para cada vizinho
-                g_score[neighbor] = temp_g_score
-                f_score[neighbor] = temp_g_score + \
-                    h(neighbor.get_pos(), end.get_pos())
+                # Define o F e G Scores para cada vizinho
+                g_score[neighbor] = temp_g
+                f_score[neighbor] = temp_g + h(neighbor.get_pos(), end.get_pos())
 
                 # Veifica se o vizinho nao esta na lista aberta
                 if neighbor not in open_list:
-                    g_count += temp_g_score
+                    g_count += temp_g
                     closed_list.put((f_score[neighbor], g_count, neighbor))
                     open_list.add(neighbor)
-
-    return False
 
 
 # Constroi o grid (matriz) com os nodes definidos no mapa
@@ -128,13 +122,15 @@ def draw_grid(window, rows, width, node_size):
 
 
 # Desenha na tela
-def draw(window, width, map, node_size):
+def draw(window, width, map, node_size, player_group):
     window.fill(BACKGROUND_COLOR)
 
+    # Desenha os nodes na tela
     for row in map.nodes:
         for node in row:
             node.draw(window)
 
+    # Desenha a grade que separa os nodes
     draw_grid(window, map.size, width, node_size)
 
     # Desenha as imagens no mapa de Hyrule
@@ -149,16 +145,18 @@ def draw(window, width, map, node_size):
 
     # Desenha as imagens no mapa da Dungeon
     else:
-        (x, y) = map.start_point
-        node = map.nodes[x][y]
-        node.draw_image(window, 'entrada_dungeon')
+        start = map.start_node
+        end = map.end_node
 
-        (x, y) = map.end_point
-        node = map.nodes[x][y]
-        node.draw_image(window, f'pingente_{map.name}')
+        start.draw_image(window, 'entrada_dungeon')
+        end.draw_image(window, f'pingente_{map.name}')
+
+    # Desenha o personagem
+    player_group.draw(window)
 
     # Atualiza a tela
     pygame.display.update()
+    pygame.time.delay(100)
 
 
 # Captura a posicao que o usuario clicou no grid
@@ -172,84 +170,91 @@ def get_clicked_pos(pos, rows, size):
     return row, col
 
 
+# Cria o jogador no ponto onde ele vai comecar
+def make_start(x, y):
+    player = Player((x, y))
+    player_group = pygame.sprite.Group()
+    player_group.add(player)
+    return player_group
+
+
 # Funcao principal
-def main(window, width):
-    map_dungeon = mp.hyrule()
-    # map_dungeon = mp.dungeon1()
-    # map_dungeon = mp.dungeon2()
-    # map_dungeon = mp.dungeon3()
-    grid = make_grid(map_dungeon, 18)
-    map_dungeon.set_nodes(grid)
+if __name__ == '__main__':
 
-    # Ponto inicial e final do mapa
-    start_point = map_dungeon.start_point
-    end_point = map_dungeon.end_point
+    # Define o mapa
+    map = mp.hyrule()
+    # map = mp.dungeon1()
+    # map = mp.dungeon2()
+    # map = mp.dungeon3()
 
-    # Nodes referentes aos pontos inicial e final do mapa
-    start = grid[start_point[0]][start_point[1]]
-    end = grid[end_point[0]][end_point[1]]
+    # Verifica o tamanho da janela do pygame (Hyrule -> 756, Dungeons -> 504)
+    width = 504 if map.is_dungeon() else 756
 
-    start.make_start()
-    end.make_end()
+    # Define a janela do pygame
+    window = pygame.display.set_mode((width, width))
+    pygame.display.set_caption("Zelda A*")
 
-    # start = None
-    # end = None
+    # Define o grid (matriz de nodes)
+    node_size = 18
+    grid = make_grid(map, node_size)
+    map.set_nodes(grid)
 
-    run = True
-    while run:
+    # Define os nodes inicial e final
+    map.set_start_end_nodes()
+    start = map.start_node
+    end = map.end_node
+
+    # Define o jogador
+    player_group = make_start(start.x, start.y)
+
+    # Inicia o jogo
+    while True:
 
         # Desenha o grid na tela
-        draw(window, width, map_dungeon, 18)
+        draw(window, width, map, node_size, player_group)
 
         # Gerencia os eventos do pygame
         for event in pygame.event.get():
 
             # Encerra o jogo
             if event.type == pygame.QUIT:
-                run = False
+                pygame.quit()
+                sys.exit()
 
             # Seleciona o ponto de partida caso nao esteja setado
-            if pygame.mouse.get_pressed()[0]:  # LEFT
+            if pygame.mouse.get_pressed()[0]:  # botao esquedo do mouse
                 pos = pygame.mouse.get_pos()
-                row, col = get_clicked_pos(pos, map_dungeon.size, width)
-                node = grid[row][col]
-                if not start and node != end:
-                    start = node
-                    start.make_start()
-                    print(start.get_pos())
+                row, col = get_clicked_pos(pos, map.size, width)
+                node = map.nodes[row][col]
 
-                elif not end and node != start:
-                    end = node
-                    end.make_end()
+                if not start:
+                    start = node
+                    player_group = make_start(node.x, node.y)
 
             # Verifica as teclas do teclado
             if event.type == pygame.KEYDOWN:
 
-                # Inicia o jogo ao pressionar a tecla SPACE
+                # SPACE - Inicia o jogo
                 if event.key == pygame.K_SPACE and start and end:
-                    for row in grid:
+                    for row in map.nodes:
                         for node in row:
-                            node.update_neighbors(grid)
+                            node.update_neighbors(map.nodes)
 
                     # Executa o algoritmo da astar
                     algorithm(
-                        lambda: draw(window, width, map_dungeon, 18),
-                        grid,
+                        lambda: draw(window, width, map, node_size, player_group),
+                        map.nodes,
                         start,
-                        end
+                        end,
+                        player_group
                     )
 
-                # Reinicia o jogo ao pressionar a tecla R
+                # R - Reinicia o jogo
                 if event.key == pygame.K_r:
+                    player_group.empty()
                     start = None
-                    end = None
-                    grid = make_grid(map_dungeon, 18)
-                    map_dungeon.set_nodes(grid)
 
-    # Encerra o jogo
-    pygame.quit()
-
-
-if __name__ == '__main__':
-
-    main(WINDOW, WIDTH)
+                # ESC - Encerra o jogo
+                if event.key == pygame.K_ESCAPE:
+                    pygame.quit()
+                    sys.exit()

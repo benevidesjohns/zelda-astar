@@ -31,34 +31,7 @@ class Node:
     def draw_image(self, window, image):
         img = pygame.image.load(f'img/{image}_18x18.png')
         window.blit(img, (self.x, self.y))
-
-
-    # Altera a cor do terreno para representar o caminho que o algoritmo encontrou
-    def make_path(self):
-        self.terrain = Terrain(
-            code = self.terrain.code,
-            cost = self.terrain.cost,
-            color = (128, 0, 128)
-        )
-
-
-    # Altera a cor do terreno para representar o caminho que o algoritmo encontrou
-    def make_start(self):
-        self.terrain = Terrain(
-            code = self.terrain.code,
-            cost = self.terrain.cost,
-            color = (255, 165, 0)
-        )
-
-
-    # Altera a cor do terreno para representar o caminho que o algoritmo encontrou
-    def make_end(self):
-        self.terrain = Terrain(
-            code = self.terrain.code,
-            cost = self.terrain.cost,
-            color = (64, 224, 208)
-        )
-
+        
 
     # Terrenos impossiveis de atravessar (paredes das Dungeons)
     def is_blocked(self):

@@ -11,11 +11,13 @@ class Map:
         self.end_point = end_point
         self.terrains = terrains
         self.nodes = []
+        self.start_node = None
+        self.end_node = None
         self.points = {
             'dungeon_1': (32, 5),
             'dungeon_2': (1, 24),
             'dungeon_3': (17, 39),
-            'link': self.start_point,
+            # 'link': self.start_point,
             'master_sword': (1, 2),
             'entrada_lost_woods': (5, 6)
         }
@@ -33,6 +35,13 @@ class Map:
 
     def set_nodes(self, nodes):
         self.nodes = nodes
+
+    def set_start_end_nodes(self):
+        (x, y) = self.start_point
+        self.start_node = self.nodes[x][y]
+
+        (x, y) = self.end_point
+        self.end_node = self.nodes[x][y]
 
 
 def get_map_code(map_name):
