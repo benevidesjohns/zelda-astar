@@ -95,15 +95,17 @@ def get_map_terrains(codes):
 # Retorna o mapa hyrule
 
 
-def hyrule():
+def hyrule(start, end):
     codes = get_map_code('HYRULE')
     terrains = get_map_terrains(codes)
 
     return Map(
         name='hyrule',
         size=42,
-        start_point=(27, 24),
-        end_point=(5, 6),
+        # start_point=(27, 24),
+        # end_point=(5, 6),
+        start_point=start,
+        end_point=end,
         terrains=terrains
     )
 
