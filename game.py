@@ -3,7 +3,6 @@ from maps import hyrule, dungeon_1, dungeon_2, dungeon_3
 from player import Player, make_start
 from algorithm import algorithm
 import pygame
-import sys
 
 
 class Game:
@@ -25,10 +24,20 @@ class Game:
         self.map = map
 
         # Define a janela e o seu tamanho
-        self.width = 504 if self.map.is_dungeon() else 756
-        self.window = pygame.display.set_mode(
-            (self.width, self.width)
-        )
+        pygame.display.quit()
+        pygame.display.init()
+
+        if self.map.is_dungeon():
+            pygame.display.set_caption(
+                f'Zelda Astar - {" ".join(self.map.name.capitalize().split("_"))}'
+            )
+            self.width = 504
+        else:
+            pygame.display.set_caption(
+                f'Zelda Astar - {self.map.name.capitalize()}')
+            self.width = 756
+
+        self.window = pygame.display.set_mode((self.width, self.width))
 
         # Constroi o grid (matriz de nodes)
         self.map.set_nodes(self.make_grid(
@@ -61,54 +70,24 @@ class Game:
             self.make_map(dungeon_3())
             self.toggle_state = False
 
-    # Inicia o jogo
-    def start(self):
-        while True:
+    # Executa o algoritmo do astar
+    def execute_algorithm(self):
+        best_way = algorithm(self.map)
 
-            # Inicia o gerenciador de estados (mapas) do jogo
-            self.state_manager()
-
-            self.draw(self.window, self.width, self.map,
-                      self.node_size, self.player)
-
-            for event in pygame.event.get():
-
-                # Verifica as teclas do teclado
-                if event.type == pygame.KEYDOWN:
-
-                    # SPACE - Inicia o jogo
-                    if event.key == pygame.K_SPACE and self.map.start_node and self.map.end_node:
-                        for row in self.map.nodes:
-                            for node in row:
-                                node.update_neighbors(self.map.nodes)
-
-                        # Executa o algoritmo da astar
-                        best_way = algorithm(self.map)
-
-                        # Constroi o melhor caminho encontrado
-                        self.reconstruct_path(
-                            reversed(best_way),
-                            best_way,
-                            lambda: self.draw(
-                                self.window,
-                                self.width,
-                                self.map,
-                                self.node_size,
-                                self.player
-                            ),
-                            self.player,
-                            self.map.is_dungeon()
-                        )
-
-                    # R - Reinicia o jogo
-                    if event.key == pygame.K_r:
-                        self.player.empty()
-                        self.map.start_node = None
-
-                    # ESC - Encerra o jogo
-                    if event.key == pygame.K_ESCAPE:
-                        pygame.quit()
-                        sys.exit()
+        # Constroi o melhor caminho encontrado
+        self.reconstruct_path(
+            reversed(best_way),
+            best_way,
+            lambda: self.draw(
+                self.window,
+                self.width,
+                self.map,
+                self.node_size,
+                self.player
+            ),
+            self.player,
+            self.map.is_dungeon()
+        )
 
     # Atualiza os nodes que definem o caminho encontrado pelo algoritmo
     def reconstruct_path(self, path, reverse_path, draw, player_group, is_dungeon):
