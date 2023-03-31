@@ -7,8 +7,8 @@ import pygame
 
 
 class Game:
-    def __init__(self):
-        self.current_start_point = (27, 24)
+    def __init__(self, start_point=(27, 24)):
+        self.current_start_point = start_point
         self.current_end_point = None
         self.map = hyrule(self.current_start_point, None)
         self.node_size = 18
@@ -17,6 +17,7 @@ class Game:
         self.state = 'hyrule'
         self.toggle_state = False
         self.started = False
+        self.finished = False
         self.order_path = [],
         self.points = {
             'dungeon_1': (32, 5),
@@ -98,20 +99,21 @@ class Game:
         paths = {}
         for i in range(len(dungeons)):
             paths[f'start_dungeon_{i+1}'] = algorithm(
-                self.map, self.map.get_node(
-                    start), self.map.get_node(dungeons[i])
+                self.map, self.map.get_node(start),
+                self.map.get_node(dungeons[i])
             )
             paths[f'dungeon_{i+1}_end'] = algorithm(
-                self.map, self.map.get_node(
-                    end), self.map.get_node(dungeons[i])
+                self.map, self.map.get_node(end),
+                self.map.get_node(dungeons[i])
             )
             for j in range(i+1, len(dungeons)):
                 paths[f'dungeon_{i+1}_dungeon_{j+1}'] = algorithm(
-                    self.map, self.map.get_node(
-                        dungeons[i]), self.map.get_node(dungeons[j])
+                    self.map, self.map.get_node(dungeons[i]),
+                    self.map.get_node(dungeons[j])
                 )
                 paths[f'dungeon_{j+1}_dungeon_{i+1}'] = list(
-                    reversed(paths[f'dungeon_{i+1}_dungeon_{j+1}']))
+                    reversed(paths[f'dungeon_{i+1}_dungeon_{j+1}'])
+                )
 
         # Calcula os custos para cada caminho
         costs = {}
@@ -126,9 +128,10 @@ class Game:
         )
 
         # Soma os custos para todas as ordens de caminhos possíveis
-        order_paths = []
+        # e verifica a melhor ordem de caminho entre as dungeons
+        order_paths = []    
         best_cost = float("inf")
-        best_order_path = 0
+        best_order_path = []
 
         for index, order in enumerate(orders):
             total_cost = 0
@@ -147,6 +150,8 @@ class Game:
 
         print('\n---------------------------------- MELHOR CAMINHO ------------------------------\n')
         print(order_paths[best_order_path])
+
+        # Define o order path e o primeiro end point do mapa
         self.order_path = order_paths[best_order_path]['order']
         self.order_path.pop(0)
         self.map.end_point = self.current_end_point = self.points[self.order_path[0]]
@@ -194,6 +199,25 @@ class Game:
                 self.toggle_state = True
                 self.state = self.order_path.pop(0)
 
+            # Chega a entrada de lost woods
+            else:
+                self.map.start_point = self.current_end_point
+                self.map.end_point = self.points['master_sword']
+                self.map.set_start_node()
+                self.map.set_end_node()
+                pygame.time.delay(500)
+                final_path = algorithm(
+                    self.map, self.map.start_node, self.map.end_node)
+                for node in final_path:
+                    player = Player((node.x, node.y))
+                    player_group.empty()
+                    player_group.add(player)
+                    self.draw(
+                        self.window, self.width, self.map,
+                        self.node_size, self.player, 200
+                    )
+                self.finished = True
+
         # Nas Dungeons -> pega o pingente e volta para Hyrule
         else:
 
@@ -216,11 +240,10 @@ class Game:
 
             # Sai da dungeon
             if self.order_path[0] == 'end':
-                next_point = self.points['entrada_lost_woods']
+                self.current_end_point = self.points['entrada_lost_woods']
             else:
-                next_point = self.points[self.order_path[0]]
+                self.current_end_point = self.points[self.order_path[0]]
 
-            self.current_end_point = next_point
             self.toggle_state = True
             self.state = 'hyrule'
 
@@ -249,7 +272,7 @@ class Game:
                 )
 
     # Desenha na tela
-    def draw(self, window, width, map, node_size, player):
+    def draw(self, window, width, map, node_size, player, delay=10):
 
         # Desenha os nodes na tela
         for row in map.nodes:
@@ -279,14 +302,4 @@ class Game:
 
         # Atualiza a tela
         pygame.display.update()
-        pygame.time.delay(20)
-
-    # TODO: Captura a posicao que o usuario clicou no grid
-    def get_clicked_pos(self, pos, rows, size):
-        gap = size // rows
-        y, x = pos
-
-        row = x // gap
-        col = y // gap
-
-        return row, col
+        pygame.time.delay(delay)
