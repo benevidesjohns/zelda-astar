@@ -1,7 +1,7 @@
 from node import Node
-from queue import PriorityQueue
-from maps import hyrule, dungeon1, dungeon2, dungeon3
+from maps import hyrule, dungeon_1, dungeon_2, dungeon_3
 from player import Player, make_start
+from algorithm import algorithm
 import pygame
 import sys
 
@@ -18,44 +18,54 @@ class Game:
         self.toggle_state = False
         self.dungeon_path = []
 
-        # Constroi o mapa
         self.make_map(self.map)
 
     # Define as propriedades do mapa
     def make_map(self, map):
         self.map = map
-        self.width = 504 if map.is_dungeon() else 756  # Tamanho da janela
+
+        # Define a janela e o seu tamanho
+        self.width = 504 if self.map.is_dungeon() else 756
         self.window = pygame.display.set_mode(
-            (self.width, self.width))  # Janela
+            (self.width, self.width)
+        )
+
+        # Constroi o grid (matriz de nodes)
         self.map.set_nodes(self.make_grid(
-            self.map, self.node_size))  # Define o grid
-        self.map.set_start_end_nodes()  # Define os nodes iniciais e finais
+            self.map, self.node_size)
+        )
+
+        # Define os pontos inicial e final do mapa e a posicao do jogador
+        self.map.set_start_end_nodes()
         self.player = make_start(
-            self.map.start_node.x, self.map.start_node.y)  # Define o jogador
+            self.map.start_node.x, self.map.start_node.y
+        )
 
     # Gerencia os estados (mapas) do jogo
     def state_manager(self):
         if self.state == 'hyrule' and self.toggle_state:
             self.make_map(
-                hyrule(self.current_start_point, self.current_end_point))
+                hyrule(self.current_start_point, self.current_end_point)
+            )
             self.toggle_state = False
 
         if self.state == 'dungeon_1' and self.toggle_state:
-            self.make_map(dungeon1())
+            self.make_map(dungeon_1())
             self.toggle_state = False
 
         if self.state == 'dungeon_2' and self.toggle_state:
-            self.make_map(dungeon2())
+            self.make_map(dungeon_2())
             self.toggle_state = False
 
         if self.state == 'dungeon_3' and self.toggle_state:
-            self.make_map(dungeon3())
+            self.make_map(dungeon_3())
             self.toggle_state = False
 
+    # Inicia o jogo
     def start(self):
         while True:
 
-            # Gerencia os mapas
+            # Inicia o gerenciador de estados (mapas) do jogo
             self.state_manager()
 
             self.draw(self.window, self.width, self.map,
@@ -73,7 +83,12 @@ class Game:
                                 node.update_neighbors(self.map.nodes)
 
                         # Executa o algoritmo da astar
-                        self.algorithm(
+                        best_way = algorithm(self.map)
+
+                        # Constroi o melhor caminho encontrado
+                        self.reconstruct_path(
+                            reversed(best_way),
+                            best_way,
                             lambda: self.draw(
                                 self.window,
                                 self.width,
@@ -81,8 +96,8 @@ class Game:
                                 self.node_size,
                                 self.player
                             ),
-                            self.map,
-                            self.player
+                            self.player,
+                            self.map.is_dungeon()
                         )
 
                     # R - Reinicia o jogo
@@ -95,15 +110,7 @@ class Game:
                         pygame.quit()
                         sys.exit()
 
-    # Funcao Heuristica -> Distancia de Manhattan
-
-    def h(self, p1, p2):
-        x1, y1 = p1
-        x2, y2 = p2
-        return abs(x1 - x2) + abs(y1 - y2)
-
     # Atualiza os nodes que definem o caminho encontrado pelo algoritmo
-
     def reconstruct_path(self, path, reverse_path, draw, player_group, is_dungeon):
         # Percorre ate o ponto final
         for node in path:
@@ -150,82 +157,7 @@ class Game:
                 self.toggle_state = True
                 self.state = 'hyrule'
 
-                
-
-    # Astar algorithm
-
-    def algorithm(self, draw, map, player):
-        came_from = {}
-        g_count = 0
-
-        # Cria uma fila de prioridade e adiciona o node inicial (lista fechada)
-        closed_list = PriorityQueue()
-        closed_list.put((0, g_count, map.start_node))
-
-        open_list = {map.start_node}
-
-        # Calcula o G Score para cada node
-        g_score = {node: float("inf") for row in map.nodes for node in row}
-        g_score[map.start_node] = 0
-
-        # Calcula o F Score para cada node
-        f_score = {node: float("inf") for row in map.nodes for node in row}
-        f_score[map.start_node] = self.h(
-            map.start_node.get_pos(), map.end_node.get_pos())
-
-        # Executa enquanto a fila de prioridade nao estiver vazia
-        while not closed_list.empty():
-
-            # Verifica se deve sair do jogo
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
-
-            # Pega o node com mais prioridade da lista fechada e o remove da lista aberta
-            current = closed_list.get()[2]
-            open_list.remove(current)
-
-            # Verifica se chegou no objetivo e constroi o caminho ate o mesmo
-            if current == map.end_node:
-
-                # Convert came_from dict in a list
-                came_from_list = [current]
-                while current in came_from:
-                    current = came_from[current]
-                    came_from_list.append(current)
-
-                # Reconstruct path between start and end points
-                self.reconstruct_path(
-                    reversed(came_from_list),
-                    came_from_list,
-                    draw,
-                    player,
-                    map.is_dungeon()
-                )
-
-                break
-
-            # Calcula o F, G e H dos vizinhos do node atual
-            for neighbor in current.neighbors:
-                temp_g = g_score[current] + neighbor.terrain.cost
-
-                if temp_g < g_score[neighbor]:
-                    came_from[neighbor] = current
-
-                    # Define o F e G Scores para cada vizinho
-                    g_score[neighbor] = temp_g
-                    f_score[neighbor] = temp_g + \
-                        self.h(neighbor.get_pos(), map.end_node.get_pos())
-
-                    # Veifica se o vizinho nao esta na lista aberta
-                    if neighbor not in open_list:
-                        g_count += temp_g
-                        closed_list.put((f_score[neighbor], g_count, neighbor))
-                        open_list.add(neighbor)
-
-    # Constroi o grid (matriz) com os nodes definidos no mapa
-
+   # Constroi o grid (matriz) com os nodes definidos no mapa
     def make_grid(self, map, node_size):
         grid = []
         for i, row in enumerate(map.terrains):
@@ -237,7 +169,6 @@ class Game:
         return grid
 
     # Desenha a grade
-
     def draw_grid(self, window, rows, width, node_size):
         for i in range(rows + 1):
             pygame.draw.line(
@@ -251,7 +182,6 @@ class Game:
                 )
 
     # Desenha na tela
-
     def draw(self, window, width, map, node_size, player):
 
         # Desenha os nodes na tela
@@ -285,7 +215,6 @@ class Game:
         pygame.time.delay(20)
 
     # Captura a posicao que o usuario clicou no grid
-
     def get_clicked_pos(self, pos, rows, size):
         gap = size // rows
         y, x = pos

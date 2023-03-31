@@ -17,7 +17,6 @@ class Map:
             'dungeon_1': (32, 5),
             'dungeon_2': (1, 24),
             'dungeon_3': (17, 39),
-            # 'link': self.start_point,
             'master_sword': (1, 2),
             'entrada_lost_woods': (5, 6)
         }
@@ -49,8 +48,6 @@ class Map:
         self.end_node = self.nodes[x][y]
 
 # Retorna os códigos de um mapa
-
-
 def get_map_code(map_name):
     map_code = {
         'HYRULE': [],
@@ -81,8 +78,6 @@ def get_map_code(map_name):
     return map_code[map_name]
 
 # Retorna os terrenos do mapa
-
-
 def get_map_terrains(codes):
     terrains = []
     for i, row in enumerate(codes):
@@ -92,9 +87,7 @@ def get_map_terrains(codes):
 
     return terrains
 
-# Retorna o mapa hyrule
-
-
+# Retorna o mapa de hyrule
 def hyrule(start, end):
     codes = get_map_code('HYRULE')
     terrains = get_map_terrains(codes)
@@ -102,15 +95,13 @@ def hyrule(start, end):
     return Map(
         name='hyrule',
         size=42,
-        # start_point=(27, 24),
-        # end_point=(5, 6),
         start_point=start,
         end_point=end,
         terrains=terrains
     )
 
-
-def dungeon1():
+# Retorna o mapa da dungeon 1
+def dungeon_1():
     codes = get_map_code('DUNGEON1')
     terrains = get_map_terrains(codes)
 
@@ -122,8 +113,8 @@ def dungeon1():
         terrains=terrains
     )
 
-
-def dungeon2():
+# Retorna o mapa da dungeon 2
+def dungeon_2():
     codes = get_map_code('DUNGEON2')
     terrains = get_map_terrains(codes)
 
@@ -135,8 +126,8 @@ def dungeon2():
         terrains=terrains
     )
 
-
-def dungeon3():
+# Retorna o mapa da dungeon 3
+def dungeon_3():
     codes = get_map_code('DUNGEON3')
     terrains = get_map_terrains(codes)
 
