@@ -22,18 +22,26 @@ if __name__ == '__main__':
             if event.type == pygame.KEYDOWN:
 
                 # SPACE - Inicia o jogo
-                if event.key == pygame.K_SPACE and game.map.start_node and game.map.end_node:
+                if event.key == pygame.K_SPACE and game.map.start_node:
                     for row in game.map.nodes:
                         for node in row:
                             node.update_neighbors(game.map.nodes)
 
+                    # Define a melhor ordem para passar pelas dungeons
+                    if not game.started:
+                        game.set_best_order()
+                        game.started = True
+
                     # Executa o algoritmo do astar
-                    game.execute_algorithm()
+                    if game.started:
+                        game.execute_algorithm()
 
                 # R - Reinicia o jogo
                 if event.key == pygame.K_r:
-                    game.player.empty()
+                    game = Game()
+                    game.current_start_point = None
                     game.map.start_node = None
+                    game.started = False
 
                 # ESC - Encerra o jogo
                 if event.key == pygame.K_ESCAPE:

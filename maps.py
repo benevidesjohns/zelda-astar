@@ -13,13 +13,6 @@ class Map:
         self.nodes = []
         self.start_node = None
         self.end_node = None
-        self.points = {
-            'dungeon_1': (32, 5),
-            'dungeon_2': (1, 24),
-            'dungeon_3': (17, 39),
-            'master_sword': (1, 2),
-            'entrada_lost_woods': (5, 6)
-        }
 
     # Verifica se o mapa é uma dungeon
     def is_dungeon(self):
@@ -39,13 +32,19 @@ class Map:
     def set_nodes(self, nodes):
         self.nodes = nodes
 
-    # Seta os nodes iniciais e finais do mapa
-    def set_start_end_nodes(self):
+    # Seta os nodes inicial e final do mapa
+    def set_start_node(self):
         (x, y) = self.start_point
         self.start_node = self.nodes[x][y]
 
+    def set_end_node(self):
         (x, y) = self.end_point
         self.end_node = self.nodes[x][y]
+    
+    # Retorna um node a partir de um ponto
+    def get_node(self, point):
+        x, y = point
+        return self.nodes[x][y]
 
 # Retorna os códigos de um mapa
 def get_map_code(map_name):

@@ -10,24 +10,24 @@ def h(p1, p2):
     return abs(x1 - x2) + abs(y1 - y2)
 
 # Algoritmo A*
-def algorithm(map):
+def algorithm(map, start_node, end_node):
     came_from = {}
     g_count = 0
 
     # Cria um dicionário, representando a lista aberta, e adiciona o node inicial
-    open_list = {map.start_node}
+    open_list = {start_node}
 
     # Cria uma fila de prioridade (lista fechada) e adiciona o node inicial
     closed_list = PriorityQueue()
-    closed_list.put((0, g_count, map.start_node))
+    closed_list.put((0, g_count, start_node))
 
     # Calcula o G Score para cada node
     g_score = {node: float("inf") for row in map.nodes for node in row}
-    g_score[map.start_node] = 0
+    g_score[start_node] = 0
 
     # Calcula o F Score para cada node
     f_score = {node: float("inf") for row in map.nodes for node in row}
-    f_score[map.start_node] = h(map.start_node.get_pos(), map.end_node.get_pos())
+    f_score[start_node] = h(start_node.get_pos(), end_node.get_pos())
 
     # Executa o algoritmo enquanto a fila de prioridade nao estiver vazia
     while not closed_list.empty():
@@ -43,7 +43,7 @@ def algorithm(map):
         open_list.remove(current)
 
         # Verifica se chegou no objetivo e constroi o caminho ate o mesmo
-        if current == map.end_node:
+        if current == end_node:
 
             # Converte o dicionario came_from em uma lista
             came_from_list = [current]
@@ -51,8 +51,8 @@ def algorithm(map):
                 current = came_from[current]
                 came_from_list.append(current)
 
-            # Retorna uma lista com o melhor caminho encontrado
-            return came_from_list
+            # Retorna uma lista com o melhor caminho encontrado (do inicio para o final)
+            return list(reversed(came_from_list))
 
         # Calcula o F, G e H dos vizinhos do node atual
         for neighbor in current.neighbors:
@@ -64,7 +64,7 @@ def algorithm(map):
                 # Define o F e G Scores para cada vizinho
                 g_score[neighbor] = temp_g
                 f_score[neighbor] = temp_g + \
-                    h(neighbor.get_pos(), map.end_node.get_pos())
+                    h(neighbor.get_pos(), end_node.get_pos())
 
                 # Veifica se o vizinho nao esta na lista aberta
                 if neighbor not in open_list:
