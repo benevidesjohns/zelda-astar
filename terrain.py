@@ -11,10 +11,10 @@ CODE = {
 
 class Terrain:
 
-    def __init__(self, code, cost, color):
+    def __init__(self, code, cost, image):
         self.code = code
         self.cost = cost
-        self.color = color
+        self.image = image
 
 # Retorna um terreno
 
@@ -26,7 +26,7 @@ def get_terrain(code):
         return Terrain(
             code,
             cost=10,
-            color=(51, 204, 51)
+            image='gram'
         )
 
     # Areia
@@ -34,7 +34,7 @@ def get_terrain(code):
         return Terrain(
             code,
             cost=20,
-            color=(196, 189, 146)
+            image='sand'
         )
 
     # Floresta
@@ -42,7 +42,7 @@ def get_terrain(code):
         return Terrain(
             code,
             cost=100,
-            color=(0, 153, 0)
+            image='forest'
         )
 
     # Montanha
@@ -50,7 +50,7 @@ def get_terrain(code):
         return Terrain(
             code,
             cost=150,
-            color=(144, 138, 77)
+            image='montain'
         )
 
     # Agua
@@ -58,8 +58,7 @@ def get_terrain(code):
         return Terrain(
             code,
             cost=180,
-            # color = (88, 140, 205)
-            color=(51, 204, 255)
+            image='water'
         )
 
     # Piso da Dungeon
@@ -67,7 +66,7 @@ def get_terrain(code):
         return Terrain(
             code,
             cost=10,
-            color=(226, 226, 226)
+            image='floor'
         )
 
     # Parede da Dungeon
@@ -75,5 +74,5 @@ def get_terrain(code):
         return Terrain(
             code,
             cost=None,
-            color=(184, 184, 184)
+            image='wall'
         )

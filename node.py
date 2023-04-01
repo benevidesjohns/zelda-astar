@@ -18,13 +18,10 @@ class Node:
         return self.row, self.col
     
 
-    # Desenha o node no grid
+    # Desenha a imagem do node
     def draw(self, window):
-        pygame.draw.rect(
-            window,
-            self.terrain.color,
-            pygame.Rect(self.x, self.y, self.size, self.size)
-        )
+        img = pygame.image.load(f'img/terrains/{self.terrain.image}.png')
+        window.blit(img, (self.x, self.y))
 
     
     # Desenha uma imagem na mesma posicao do node

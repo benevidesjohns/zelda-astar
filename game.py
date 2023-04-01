@@ -33,9 +33,10 @@ class Game:
     def make_map(self, map):
         self.map = map
 
-        # Define a janela e o seu tamanho
-        pygame.display.quit()
-        pygame.display.init()
+            # Define a janela e o seu tamanho
+        if self.started: 
+            pygame.display.quit()
+            pygame.display.init()
 
         if self.map.is_dungeon():
             pygame.display.set_caption(
@@ -281,7 +282,7 @@ class Game:
                 node.draw(window)
 
         # Desenha a grade que separa os nodes
-        self.draw_grid(window, map.size, width, node_size)
+        # self.draw_grid(window, map.size, width, node_size)
 
         # Desenha as imagens no mapa de Hyrule
         if not map.is_dungeon():
