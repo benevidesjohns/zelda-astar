@@ -7,7 +7,7 @@ import pygame
 
 
 class Game:
-    def __init__(self, start_point=(27, 24)):
+    def __init__(self, start_point=None):
         self.current_start_point = start_point
         self.current_end_point = None
         self.map = hyrule(self.current_start_point, None)
@@ -56,10 +56,11 @@ class Game:
         ))
 
         # Define o ponto inicial do mapa e a posicao do jogador
-        self.map.set_start_node()
-        self.player = make_start(
-            self.map.start_node.x, self.map.start_node.y
-        )
+        if self.map.start_point:
+            self.map.set_start_node()
+            self.player = make_start(
+                self.map.start_node.x, self.map.start_node.y
+            )
 
         # Define o ponto final do mapa, caso esse seja estabelecido
         if self.map.end_point:
@@ -129,7 +130,7 @@ class Game:
 
         # Soma os custos para todas as ordens de caminhos possíveis
         # e verifica a melhor ordem de caminho entre as dungeons
-        order_paths = []    
+        order_paths = []
         best_cost = float("inf")
         best_order_path = []
 
@@ -298,7 +299,8 @@ class Game:
             map.end_node.draw_image(window, f'pingente_{map.name}')
 
         # Desenha o personagem
-        player.draw(window)
+        if player:
+            player.draw(window)
 
         # Atualiza a tela
         pygame.display.update()

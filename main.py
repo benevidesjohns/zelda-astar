@@ -1,10 +1,11 @@
 from game import Game
+from player import make_start
 import pygame
 import sys
 
 # TODO: Captura a posicao que o usuario clicou no grid
-def get_clicked_pos(pos, rows, size):
-    gap = size // rows
+def get_clicked_pos(pos, rows, width):
+    gap = width // rows
     y, x = pos
 
     row = x // gap
@@ -12,10 +13,9 @@ def get_clicked_pos(pos, rows, size):
 
     return row, col
 
-
 if __name__ == '__main__':
 
-    game = Game(start_point=(20, 25))
+    game = Game()
     pygame.init()
 
     # Inicia o jogo
@@ -29,11 +29,19 @@ if __name__ == '__main__':
 
         for event in pygame.event.get():
 
+            # Adicionar um novo ponto inicial, caso este não esteja definido
+            if pygame.mouse.get_pressed()[0] and not game.map.start_node:
+                pos = pygame.mouse.get_pos()
+                y, x = get_clicked_pos(pos, game.map.size, game.width)
+                game.current_start_point = (y, x)
+                game.map.start_point = (y, x)
+                game.make_map(game.map)
+
             # Verifica as teclas do teclado
             if event.type == pygame.KEYDOWN:
 
                 # SPACE - Inicia o jogo
-                if event.key == pygame.K_SPACE and game.map.start_node:
+                if event.key == pygame.K_SPACE and game.current_start_point:
                     for row in game.map.nodes:
                         for node in row:
                             node.update_neighbors(game.map.nodes)
@@ -47,9 +55,9 @@ if __name__ == '__main__':
                     if game.started and not game.finished:
                         game.execute_algorithm()
 
-                #TODO: R - Reinicia o jogo
+                # TODO: R - Reinicia o jogo
                 if event.key == pygame.K_r:
-                    game = Game(start_point=(20, 25))
+                    game = Game()
                     game.current_start_point = None
                     game.map.start_node = None
                     game.started = False
@@ -59,7 +67,3 @@ if __name__ == '__main__':
                 if event.key == pygame.K_ESCAPE:
                     pygame.quit()
                     sys.exit()
-
-            #TODO: Adicionar um novo ponto inicial, caso este não esteja definido
-            if True:
-                pass
