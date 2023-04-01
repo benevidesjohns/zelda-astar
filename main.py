@@ -1,6 +1,7 @@
 from game import Game
 from player import make_start
 import pygame
+import gif
 import sys
 
 
@@ -27,6 +28,7 @@ if __name__ == '__main__':
 
         # Desenha os elementos da janela do jogo
         game.draw()
+
 
         # Gerencia os eventos de mouse e teclado
         for event in pygame.event.get():
@@ -59,8 +61,15 @@ if __name__ == '__main__':
                 # R - Reinicia o jogo
                 if event.key == pygame.K_r:
                     game = Game()
-
+                
                 # ESC - Encerra o jogo
                 if event.key == pygame.K_ESCAPE:
                     pygame.quit()
                     sys.exit()
+            
+                # Gera um gif quando o link chegar na master sword
+                if game.finished:
+                    pygame.display.quit()
+                    pygame.display.init()
+                    screen = gif.init()
+                    gif.main(screen, 'img/skyward-sword-zelda.gif')
