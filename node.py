@@ -1,57 +1,57 @@
-from terrain import Terrain
 import pygame
 
-class Node:
+
+class Artifact(pygame.sprite.Sprite):
+    def __init__(self, image, x, y):
+        super().__init__()
+        self.image = pygame.image.load(f'img/{image}_18x18.png')
+        self.rect = self.image.get_rect()
+        self.rect.topleft = (x, y)
+
+
+class Node(pygame.sprite.Sprite):
     def __init__(self, row, col, size, terrain, total_rows):
+        super().__init__()
+        self.size = size
         self.row = row
         self.col = col
         self.x = col * size
         self.y = row * size
         self.total_rows = total_rows
-        self.terrain = terrain
+        self.cost = terrain.cost
+        self.image = pygame.image.load(f'img/terrains/{terrain.image}.png')
+        self.rect = self.image.get_rect()
+        self.rect.topleft = (self.x, self.y)
+        self.artifact = pygame.sprite.Group()
+        self.artifact_name = ''
         self.neighbors = []
-        self.size = size
-
 
     # Retorna a posicao desse node no grid
     def get_pos(self):
         return self.row, self.col
     
+    # Define o artifact a ser desenhado sobre esse node
+    def set_artifact(self, image):
+        self.artifact.add(Artifact(image, self.x, self.y))
+        self.artifact_name = image
 
-    # Desenha a imagem do node
-    def draw(self, window):
-        img = pygame.image.load(f'img/terrains/{self.terrain.image}.png')
-        window.blit(img, (self.x, self.y))
-
-    
-    # Desenha uma imagem na mesma posicao do node
-    def draw_image(self, window, image):
-        img = pygame.image.load(f'img/{image}_18x18.png')
-        window.blit(img, (self.x, self.y))
-        
-
-    # Terrenos impossiveis de atravessar (paredes das Dungeons)
-    def is_blocked(self):
-        return self.terrain.cost is None
-    
-    
     # Atualiza os vizinhos do node atual
     def update_neighbors(self, grid):
         self.neighbors = []
 
         # Verifica se pode existir um vizinho embaixo desse node
-        if self.row < self.total_rows - 1 and not grid[self.row + 1][self.col].is_blocked():
+        if self.row < self.total_rows - 1 and not grid[self.row + 1][self.col].cost is None:
             self.neighbors.append(grid[self.row + 1][self.col])
 
         # Verifica se pode existir um vizinho em cima desse node
-        if self.row > 0 and not grid[self.row - 1][self.col].is_blocked():
+        if self.row > 0 and not grid[self.row - 1][self.col].cost is None:
             self.neighbors.append(grid[self.row - 1][self.col])
 
         # Verifica se pode existir um vizinho a direita desse node
-        if self.col < self.total_rows - 1 and not grid[self.row][self.col + 1].is_blocked():
+        if self.col < self.total_rows - 1 and not grid[self.row][self.col + 1].cost is None:
             self.neighbors.append(grid[self.row][self.col + 1])
 
         # Verifica se pode existir um vizinho a esquerda desse node
-        if self.col > 0 and not grid[self.row][self.col - 1].is_blocked():
+        if self.col > 0 and not grid[self.row][self.col - 1].cost is None:
             self.neighbors.append(grid[self.row][self.col - 1])
 

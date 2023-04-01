@@ -18,16 +18,6 @@ class Map:
     def is_dungeon(self):
         return self.size == 28
 
-    # Seta um ponto inicial no mapa
-    def set_start_point(self, point):
-        x, y = point
-        self.start_point = (x, y)
-
-    # Seta um ponto final no mapa
-    def set_end_point(self, point):
-        x, y = point
-        self.end_point = (x, y)
-
     # Seta uma lista de nodes no mapa
     def set_nodes(self, nodes):
         self.nodes = nodes

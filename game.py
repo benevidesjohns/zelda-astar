@@ -11,6 +11,7 @@ class Game:
         self.current_start_point = start_point
         self.current_end_point = None
         self.map = hyrule(self.current_start_point, None)
+        self.nodes_group = pygame.sprite.Group()
         self.node_size = 18
         self.window = None
         self.player = None
@@ -33,10 +34,28 @@ class Game:
     def make_map(self, map):
         self.map = map
 
-            # Define a janela e o seu tamanho
-        if self.started: 
-            pygame.display.quit()
-            pygame.display.init()
+        # Constroi o grid (matriz de nodes)
+        self.map.set_nodes(self.make_grid())
+
+        # Define os vizinhos de cada node
+        for row in self.map.nodes:
+            for node in row:
+                node.update_neighbors(self.map.nodes)
+
+        # Define o ponto inicial do mapa e a posicao do jogador
+        if self.map.start_point:
+            self.map.set_start_node()
+            self.player = make_start(
+                self.map.start_node.x, self.map.start_node.y
+            )
+
+        # Define o ponto final do mapa, caso esse seja estabelecido
+        if self.map.end_point:
+            self.map.set_end_node()
+
+        # Define a janela e o seu tamanho
+        pygame.display.quit()
+        pygame.display.init()
 
         if self.map.is_dungeon():
             pygame.display.set_caption(
@@ -50,22 +69,6 @@ class Game:
             self.width = 756
 
         self.window = pygame.display.set_mode((self.width, self.width))
-
-        # Constroi o grid (matriz de nodes)
-        self.map.set_nodes(self.make_grid(
-            self.map, self.node_size
-        ))
-
-        # Define o ponto inicial do mapa e a posicao do jogador
-        if self.map.start_point:
-            self.map.set_start_node()
-            self.player = make_start(
-                self.map.start_node.x, self.map.start_node.y
-            )
-
-        # Define o ponto final do mapa, caso esse seja estabelecido
-        if self.map.end_point:
-            self.map.set_end_node()
 
     # Gerencia os estados (mapas) do jogo
     def state_manager(self):
@@ -120,8 +123,8 @@ class Game:
         # Calcula os custos para cada caminho
         costs = {}
         for key, nodes in paths.items():
-            path_cost = sum(list(map(lambda node: node.terrain.cost, nodes)))
-            costs[key] = path_cost - nodes[-1].terrain.cost
+            path_cost = sum(list(map(lambda node: node.cost, nodes)))
+            costs[key] = path_cost - nodes[-1].cost
 
         # Lista todas as ordens de caminhos possíveis
         permuts = list(permutations(['dungeon_1', 'dungeon_2', 'dungeon_3']))
@@ -167,78 +170,69 @@ class Game:
     # Executa o algoritmo do astar
     def execute_algorithm(self):
         best_way = algorithm(self.map, self.map.start_node, self.map.end_node)
+        self.reconstruct_path(best_way, list(reversed(best_way)))
 
-        # Constroi o melhor caminho encontrado
-        self.reconstruct_path(
-            best_way,
-            list(reversed(best_way)),
-            lambda: self.draw(
-                self.window,
-                self.width,
-                self.map,
-                self.node_size,
-                self.player
-            ),
-            self.player,
-        )
+    # Faz a animacao do player andando no mapa
+    def draw_player(self, path, delay):
+
+        for node in path:
+
+            # Desenha o player
+            player = Player((node.x, node.y))
+            self.player.add(player)
+            self.player.draw(self.window)
+            pygame.display.update()
+            pygame.time.delay(delay)
+
+            # Remove o player
+            if node != path[-1]:
+                self.player.add(node)
+                self.player.draw(self.window)
+                self.player.empty()
+
+            # Redesenha a grade
+            if self.state == 'hyrule':
+                self.draw_grid()
+
+            # Redesenha os artifacts
+            if not node.artifact is None and 'pingente' not in node.artifact_name:
+                node.artifact.draw(self.window)
+
+            pygame.display.update()
 
     # Atualiza os nodes que definem o caminho encontrado pelo algoritmo
-    def reconstruct_path(self, path, reverse_path, draw, player_group):
+    def reconstruct_path(self, path, reverse_path):
 
         # Em Hyrule -> anda até a entrada da dungeon e entra
         if self.state == 'hyrule':
 
             # Percorre ate o ponto final
-            for node in path:
-                player = Player((node.x, node.y))
-                player_group.empty()
-                player_group.add(player)
-                draw()
-
+            self.draw_player(path=path, delay=20)
+                
             # Entra na dungeon, caso o player nao tenha chegado ao objetivo final
             if self.order_path[0] != 'end':
                 self.current_start_point = self.current_end_point
                 self.toggle_state = True
                 self.state = self.order_path.pop(0)
 
-            # Chega a entrada de lost woods
+            # Chega a entrada de lost woods (caminhando lentamente e com estilo)
             else:
                 self.map.start_point = self.current_end_point
                 self.map.end_point = self.points['master_sword']
                 self.map.set_start_node()
                 self.map.set_end_node()
-                pygame.time.delay(500)
-                final_path = algorithm(
-                    self.map, self.map.start_node, self.map.end_node)
-                for node in final_path:
-                    player = Player((node.x, node.y))
-                    player_group.empty()
-                    player_group.add(player)
-                    self.draw(
-                        self.window, self.width, self.map,
-                        self.node_size, self.player, 200
-                    )
+
+                final_path = algorithm(self.map, self.map.start_node, self.map.end_node)
+                
+                pygame.time.delay(500) # Pausa dramática
+                self.draw_player(path=final_path, delay=200)
                 self.finished = True
 
         # Nas Dungeons -> pega o pingente e volta para Hyrule
         else:
-
-            # Vai até o pingente
-            for node in path:
-                player = Player((node.x, node.y))
-                player_group.empty()
-                player_group.add(player)
-                draw()
-
-            # Pega o pingente
-            pygame.time.delay(200)
-
-            # Volta para a entrada da dungeon
-            for node in reverse_path:
-                player = Player((node.x, node.y))
-                player_group.empty()
-                player_group.add(player)
-                draw()
+            self.draw_player(path=path, delay=20)           # Vai até o pingente
+            pygame.time.delay(200)                          # Pega o pingente
+            self.draw_player(path=reverse_path, delay=20)   # Volta para a entrada da dungeon
 
             # Sai da dungeon
             if self.order_path[0] == 'end':
@@ -250,58 +244,61 @@ class Game:
             self.state = 'hyrule'
 
    # Constroi o grid (matriz) com os nodes definidos no mapa
-    def make_grid(self, map, node_size):
+    def make_grid(self):
         grid = []
-        for i, row in enumerate(map.terrains):
+        for i, row in enumerate(self.map.terrains):
             grid.append([])
             for j, terrain in enumerate(row):
-                node = Node(i, j, node_size, terrain, map.size)
+                node = Node(i, j, self.node_size, terrain, self.map.size)
+                self.nodes_group.add(node)
                 grid[i].append(node)
 
         return grid
 
     # Desenha a grade
-    def draw_grid(self, window, rows, width, node_size):
-        for i in range(rows + 1):
+    def draw_grid(self):
+        for i in range(self.map.size + 1):
             pygame.draw.line(
-                window, (70, 70, 70),  (0, i *
-                                        node_size), (width, i * node_size)
+                self.window, (70, 70, 70), (0, i * self.node_size),
+                (self.width, i * self.node_size)
             )
-            for j in range(rows):
+            for j in range(self.map.size):
                 pygame.draw.line(
-                    window, (70, 70, 70), (j * node_size,
-                                           0), (j * node_size, width)
+                    self.window, (70, 70, 70), (j * self.node_size, 0),
+                    (j * self.node_size, self.width)
                 )
 
     # Desenha na tela
-    def draw(self, window, width, map, node_size, player, delay=10):
-
+    def draw(self, delay=10):
         # Desenha os nodes na tela
-        for row in map.nodes:
-            for node in row:
-                node.draw(window)
+        self.nodes_group.draw(self.window)
 
         # Desenha a grade que separa os nodes
-        # self.draw_grid(window, map.size, width, node_size)
+        if self.state == 'hyrule':
+            self.draw_grid()
 
         # Desenha as imagens no mapa de Hyrule
-        if not map.is_dungeon():
+        if not self.map.is_dungeon():
             for local, coord in self.points.items():
                 (x, y) = coord
-                node = map.nodes[x][y]
+                node = self.map.nodes[x][y]
                 if 'dungeon' in local:
-                    node.draw_image(window, 'entrada_dungeon')
+                    node.set_artifact('entrada_dungeon')
                 else:
-                    node.draw_image(window, local)
+                    node.set_artifact(local)
+
+                node.artifact.draw(self.window)
 
         # Desenha as imagens no mapa da Dungeon
         else:
-            map.start_node.draw_image(window, 'entrada_dungeon')
-            map.end_node.draw_image(window, f'pingente_{map.name}')
+            self.map.start_node.set_artifact('entrada_dungeon')
+            self.map.start_node.artifact.draw(self.window)
+            self.map.end_node.set_artifact(f'pingente_{self.map.name}')
+            self.map.end_node.artifact.draw(self.window)
 
         # Desenha o personagem
-        if player:
-            player.draw(window)
+        if self.player:
+            self.player.draw(self.window)
 
         # Atualiza a tela
         pygame.display.update()

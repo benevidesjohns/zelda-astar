@@ -3,7 +3,8 @@ from player import make_start
 import pygame
 import sys
 
-# TODO: Captura a posicao que o usuario clicou no grid
+
+# Captura a posicao que o usuario clicou no grid
 def get_clicked_pos(pos, rows, width):
     gap = width // rows
     y, x = pos
@@ -13,55 +14,51 @@ def get_clicked_pos(pos, rows, width):
 
     return row, col
 
+
 if __name__ == '__main__':
 
     game = Game()
     pygame.init()
 
-    # Inicia o jogo
     while True:
 
         # Inicia o gerenciador de estados (mapas) do jogo
-        game.state_manager()
+        game.state_manager() 
 
-        game.draw(game.window, game.width, game.map,
-                  game.node_size, game.player)
+        # Desenha os elementos da janela do jogo
+        game.draw()
 
+        # Gerencia os eventos de mouse e teclado
         for event in pygame.event.get():
 
-            # Adicionar um novo ponto inicial, caso este não esteja definido
-            if pygame.mouse.get_pressed()[0] and not game.map.start_node:
+            # MOUSE LEFT BUTTON - Define um ponto inicial, caso ainda não esteja
+            if pygame.mouse.get_pressed()[0] and not game.map.start_node and game.state == 'hyrule':
+
+                # Captura a posição na tela onde foi clicado com o mouse
                 pos = pygame.mouse.get_pos()
                 y, x = get_clicked_pos(pos, game.map.size, game.width)
-                game.current_start_point = (y, x)
-                game.map.start_point = (y, x)
-                game.make_map(game.map)
+                
+                # Define o ponto inicial do mapa
+                game.current_start_point = game.map.start_point = (y, x)
+                game.map.set_start_node()
+                game.player = make_start(
+                    game.map.start_node.x, game.map.start_node.y
+                )
+
+                # Define a melhor ordem para passar pelas dungeons
+                game.set_best_order()
+                game.started = True
 
             # Verifica as teclas do teclado
             if event.type == pygame.KEYDOWN:
 
                 # SPACE - Inicia o jogo
-                if event.key == pygame.K_SPACE and game.current_start_point:
-                    for row in game.map.nodes:
-                        for node in row:
-                            node.update_neighbors(game.map.nodes)
+                if event.key == pygame.K_SPACE and game.started and not game.finished:
+                    game.execute_algorithm()
 
-                    # Define a melhor ordem para passar pelas dungeons
-                    if not game.started:
-                        game.set_best_order()
-                        game.started = True
-
-                    # Executa o algoritmo do astar
-                    if game.started and not game.finished:
-                        game.execute_algorithm()
-
-                # TODO: R - Reinicia o jogo
+                # R - Reinicia o jogo
                 if event.key == pygame.K_r:
                     game = Game()
-                    game.current_start_point = None
-                    game.map.start_node = None
-                    game.started = False
-                    game.finished = False
 
                 # ESC - Encerra o jogo
                 if event.key == pygame.K_ESCAPE:

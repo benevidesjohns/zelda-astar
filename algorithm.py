@@ -31,7 +31,6 @@ def algorithm(map, start_node, end_node):
 
     # Executa o algoritmo enquanto a fila de prioridade nao estiver vazia
     while not closed_list.empty():
-
         # Verifica se deve sair do jogo
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -44,7 +43,6 @@ def algorithm(map, start_node, end_node):
 
         # Verifica se chegou no objetivo e constroi o caminho ate o mesmo
         if current == end_node:
-
             # Converte o dicionario came_from em uma lista
             came_from_list = [current]
             while current in came_from:
@@ -56,7 +54,7 @@ def algorithm(map, start_node, end_node):
 
         # Calcula o F, G e H dos vizinhos do node atual
         for neighbor in current.neighbors:
-            temp_g = g_score[current] + neighbor.terrain.cost
+            temp_g = g_score[current] + neighbor.cost
 
             if temp_g < g_score[neighbor]:
                 came_from[neighbor] = current
