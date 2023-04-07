@@ -33,16 +33,16 @@ class Game:
             'entrada_lost_woods': (5, 6)
         }
         self.hyrule_song = self.create_song('lost_woods')
-        self.dungeon_song1 = self.create_song('song_of_storms')
-        self.dungeon_song2 = self.create_song('meet_zelda_again')
-        self.dungeon_song3 = self.create_song('mayors_meeting')
-        self.get_pingente = self.create_song('small_item_get', 0.3)
+        self.dungeon_song1 = self.create_song('song_of_storms', 0.7)
+        self.dungeon_song2 = self.create_song('meet_zelda_again', 0.7)
+        self.dungeon_song3 = self.create_song('mayors_meeting', 0.7)
+        self.get_pingente = self.create_song('small_item_get', 0.5)
         self.winner_song = self.create_song('ikana_castle')
 
         self.ch_hyrule = mixer.Channel(0)
-        self.ch_dungeon1 = mixer.Channel(1)
-        self.ch_dungeon2 = mixer.Channel(2)
-        self.ch_dungeon3 = mixer.Channel(3)
+        self.ch_dungeon = [
+            mixer.Channel(1), mixer.Channel(2), mixer.Channel(3)
+        ]
         self.ch_winner = mixer.Channel(4)
         self.ch_pingente = mixer.Channel(5)
 
@@ -108,9 +108,7 @@ class Game:
                 hyrule(self.current_start_point, self.current_end_point)
             )
 
-            self.ch_dungeon1.stop()
-            self.ch_dungeon2.stop()
-            self.ch_dungeon3.stop()
+            for ch_dungeon in self.ch_dungeon: ch_dungeon.stop()
             self.ch_hyrule.unpause()
 
             self.toggle_state = False
@@ -119,7 +117,7 @@ class Game:
             self.make_map(dungeon_1())
 
             self.ch_hyrule.pause()
-            self.ch_dungeon1.play(self.dungeon_song1)
+            self.ch_dungeon[0].play(self.dungeon_song1)
 
             self.toggle_state = False
 
@@ -127,7 +125,7 @@ class Game:
             self.make_map(dungeon_2())
 
             self.ch_hyrule.pause()
-            self.ch_dungeon2.play(self.dungeon_song2)
+            self.ch_dungeon[1].play(self.dungeon_song2)
 
             self.toggle_state = False
 
@@ -135,7 +133,7 @@ class Game:
             self.make_map(dungeon_3())
 
             self.ch_hyrule.pause()
-            self.ch_dungeon3.play(self.dungeon_song3)
+            self.ch_dungeon[2].play(self.dungeon_song3)
 
             self.toggle_state = False
 
@@ -287,7 +285,7 @@ class Game:
                 final_path = algorithm(
                     self.map, self.map.start_node, self.map.end_node)
 
-                self.ch_hyrule.fadeout(3000)
+                self.ch_hyrule.fadeout(3300)
                 pygame.time.delay(500)  # Pausa dramática
                 self.draw_player(path=final_path, delay=200)
                 
@@ -300,8 +298,10 @@ class Game:
             # Vai até o pingente
             self.draw_player(path=path, delay=20)
             
-            self.ch_pingente.play(self.get_pingente)
+            for ch_dungeon in self.ch_dungeon: ch_dungeon.set_volume(0.3)
+            self.ch_pingente.play(self.get_pingente, maxtime=2000)
             pygame.time.delay(2000)
+            for ch_dungeon in self.ch_dungeon: ch_dungeon.set_volume(0.7)
 
             # Volta para a entrada da dungeon
             self.draw_player(path=reverse_path, delay=20)
