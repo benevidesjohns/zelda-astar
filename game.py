@@ -10,6 +10,8 @@ class Game:
     def __init__(self, start_point=None):
         self.current_start_point = start_point
         self.current_end_point = None
+        self.current_path = None
+        self.path = None
         self.map = hyrule(self.current_start_point, None)
         self.nodes_group = pygame.sprite.Group()
         self.node_size = 18
@@ -18,8 +20,10 @@ class Game:
         self.state = 'hyrule'
         self.toggle_state = False
         self.started = False
+        self.running = False
         self.finished = False
-        self.order_path = [],
+        self.total_cost = 0,
+        self.order = [],
         self.points = {
             'dungeon_1': (32, 5),
             'dungeon_2': (1, 24),
@@ -70,6 +74,10 @@ class Game:
 
         self.window = pygame.display.set_mode((self.width, self.width))
 
+        # Define o próximo caminho a seguir no mapa de hyrule
+        if self.started and self.state == 'hyrule':
+            self.current_path = self.path.pop(0)
+
     # Gerencia os estados (mapas) do jogo
     def state_manager(self):
         if self.state == 'hyrule' and self.toggle_state:
@@ -107,9 +115,9 @@ class Game:
                 self.map, self.map.get_node(start),
                 self.map.get_node(dungeons[i])
             )
-            paths[f'dungeon_{i+1}_end'] = algorithm(
-                self.map, self.map.get_node(end),
-                self.map.get_node(dungeons[i])
+            paths[f'dungeon_{i+1}_entrada_lost_woods'] = algorithm(
+                self.map, self.map.get_node(dungeons[i]),
+                self.map.get_node(end)
             )
             for j in range(i+1, len(dungeons)):
                 paths[f'dungeon_{i+1}_dungeon_{j+1}'] = algorithm(
@@ -129,14 +137,14 @@ class Game:
         # Lista todas as ordens de caminhos possíveis
         permuts = list(permutations(['dungeon_1', 'dungeon_2', 'dungeon_3']))
         orders = list(
-            map(lambda order: ['start'] + list(order) + ['end'], permuts)
+            map(lambda order: ['start'] + list(order) + ['entrada_lost_woods'], permuts)
         )
 
         # Soma os custos para todas as ordens de caminhos possíveis
         # e verifica a melhor ordem de caminho entre as dungeons
         order_paths = []
         best_cost = float("inf")
-        best_order_path = []
+        best_order_path_index = 0
 
         for index, order in enumerate(orders):
             total_cost = 0
@@ -151,32 +159,39 @@ class Game:
 
             if total_cost < best_cost:
                 best_cost = total_cost
-                best_order_path = index
+                best_order_path_index = index
 
-        print('\n---------------------------------- MELHOR CAMINHO ------------------------------\n')
-        print(order_paths[best_order_path])
+        print('\n------------------------ MELHOR CAMINHO ENTRE AS DUNGEONS -----------------------\n')
+        print(order_paths[best_order_path_index])
+
+        # Seleciona os paths da melhor ordem de caminho entre as dungeons
+        best_order_path = order_paths[best_order_path_index]['order']
+        best_paths = []
+        for i in range(len(best_order_path)-1):
+            best_paths.append(paths[f'{best_order_path[i]}_{best_order_path[i+1]}'])
 
         # Define o order path e o primeiro end point do mapa
-        self.order_path = order_paths[best_order_path]['order']
-        self.order_path.pop(0)
-        self.map.end_point = self.current_end_point = self.points[self.order_path[0]]
+        self.path = best_paths
+        self.current_path = self.path.pop(0)
+
+        self.order = order_paths[best_order_path_index]['order']
+        self.order.pop(0)
+
+        self.map.end_point = self.current_end_point = self.points[self.order[0]]
         self.map.set_end_node()
 
-        print('\n---------------------------------- OUTROS CAMINHOS ------------------------------\n')
+        print('\n-------------------------------- OUTROS CAMINHOS --------------------------------\n')
         for i in range(len(order_paths)):
-            if i != best_order_path:
+            if i != best_order_path_index:
                 print(order_paths[i], end='\n\n')
 
-    # Executa o algoritmo do astar
-    def execute_algorithm(self):
-        # Testes para ir até o fim, sem passar pelas dungeons
-        # self.current_end_point = (5, 6)
-        # self.map.end_point = (5, 6)
-        # self.map.set_end_node()
-        # self.order_path = ['end']
-
-        best_way = algorithm(self.map, self.map.start_node, self.map.end_node)
-        self.reconstruct_path(best_way, list(reversed(best_way)))
+    # Inicia o jogo
+    def start(self):
+        if self.state == 'hyrule':
+            self.reconstruct_path(self.current_path, list(reversed(self.current_path)))
+        else:
+            best_way = algorithm(self.map, self.map.start_node, self.map.end_node)
+            self.reconstruct_path(best_way, list(reversed(best_way)))
 
     # Faz a animacao do player andando no mapa
     def draw_player(self, path, delay):
@@ -216,10 +231,10 @@ class Game:
             self.draw_player(path=path, delay=20)
 
             # Entra na dungeon, caso o player nao tenha chegado ao objetivo final
-            if self.order_path[0] != 'end':
+            if self.order[0] != 'entrada_lost_woods':
                 self.current_start_point = self.current_end_point
                 self.toggle_state = True
-                self.state = self.order_path.pop(0)
+                self.state = self.order.pop(0)
 
             # Chega a entrada de lost woods (caminhando lentamente e com estilo)
             else:
@@ -239,16 +254,13 @@ class Game:
         else:
             # Vai até o pingente
             self.draw_player(path=path, delay=20)
-            pygame.time.delay(200)                          # Pega o pingente
+            pygame.time.delay(200)
+
             # Volta para a entrada da dungeon
             self.draw_player(path=reverse_path, delay=20)
 
             # Sai da dungeon
-            if self.order_path[0] == 'end':
-                self.current_end_point = self.points['entrada_lost_woods']
-            else:
-                self.current_end_point = self.points[self.order_path[0]]
-
+            self.current_end_point = self.points[self.order[0]]
             self.toggle_state = True
             self.state = 'hyrule'
 

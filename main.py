@@ -54,8 +54,9 @@ if __name__ == '__main__':
             if event.type == pygame.KEYDOWN:
 
                 # SPACE - Inicia o jogo
-                if event.key == pygame.K_SPACE and game.started and not game.finished:
-                    game.execute_algorithm()
+                if event.key == pygame.K_SPACE and game.started and not game.running and not game.finished:
+                    game.start()
+                    # game.running = True
 
                 # R - Reinicia o jogo
                 if event.key == pygame.K_r:
