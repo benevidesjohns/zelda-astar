@@ -169,6 +169,12 @@ class Game:
 
     # Executa o algoritmo do astar
     def execute_algorithm(self):
+        # Testes para ir até o fim, sem passar pelas dungeons
+        # self.current_end_point = (5, 6)
+        # self.map.end_point = (5, 6)
+        # self.map.set_end_node()
+        # self.order_path = ['end']
+
         best_way = algorithm(self.map, self.map.start_node, self.map.end_node)
         self.reconstruct_path(best_way, list(reversed(best_way)))
 
@@ -208,7 +214,7 @@ class Game:
 
             # Percorre ate o ponto final
             self.draw_player(path=path, delay=20)
-                
+
             # Entra na dungeon, caso o player nao tenha chegado ao objetivo final
             if self.order_path[0] != 'end':
                 self.current_start_point = self.current_end_point
@@ -222,17 +228,20 @@ class Game:
                 self.map.set_start_node()
                 self.map.set_end_node()
 
-                final_path = algorithm(self.map, self.map.start_node, self.map.end_node)
-                
-                pygame.time.delay(500) # Pausa dramática
+                final_path = algorithm(
+                    self.map, self.map.start_node, self.map.end_node)
+
+                pygame.time.delay(500)  # Pausa dramática
                 self.draw_player(path=final_path, delay=200)
                 self.finished = True
 
         # Nas Dungeons -> pega o pingente e volta para Hyrule
         else:
-            self.draw_player(path=path, delay=20)           # Vai até o pingente
+            # Vai até o pingente
+            self.draw_player(path=path, delay=20)
             pygame.time.delay(200)                          # Pega o pingente
-            self.draw_player(path=reverse_path, delay=20)   # Volta para a entrada da dungeon
+            # Volta para a entrada da dungeon
+            self.draw_player(path=reverse_path, delay=20)
 
             # Sai da dungeon
             if self.order_path[0] == 'end':

@@ -24,13 +24,12 @@ if __name__ == '__main__':
     while True:
 
         # Inicia o gerenciador de estados (mapas) do jogo
-        game.state_manager() 
+        game.state_manager()
 
         # Desenha os elementos da janela do jogo
         game.draw()
 
-
-        # Gerencia os eventos de mouse e teclado
+        # Gerencia os eventos do pygame
         for event in pygame.event.get():
 
             # MOUSE LEFT BUTTON - Define um ponto inicial, caso ainda não esteja
@@ -39,7 +38,7 @@ if __name__ == '__main__':
                 # Captura a posição na tela onde foi clicado com o mouse
                 pos = pygame.mouse.get_pos()
                 y, x = get_clicked_pos(pos, game.map.size, game.width)
-                
+
                 # Define o ponto inicial do mapa
                 game.current_start_point = game.map.start_point = (y, x)
                 game.map.set_start_node()
@@ -61,15 +60,14 @@ if __name__ == '__main__':
                 # R - Reinicia o jogo
                 if event.key == pygame.K_r:
                     game = Game()
-                
+
                 # ESC - Encerra o jogo
                 if event.key == pygame.K_ESCAPE:
                     pygame.quit()
                     sys.exit()
-            
-                # Gera um gif quando o link chegar na master sword
-                if game.finished:
-                    pygame.display.quit()
-                    pygame.display.init()
-                    screen = gif.init()
-                    gif.main(screen, 'img/skyward-sword-zelda.gif')
+
+            # Exibe um gif quando o link chegar na master sword
+            if game.finished:
+                pygame.display.quit()
+                pygame.display.init()
+                gif.run('img/skyward-sword-zelda.gif')
