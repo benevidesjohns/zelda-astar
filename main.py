@@ -4,7 +4,6 @@ import pygame
 import gif
 import sys
 
-
 # Captura a posicao que o usuario clicou no grid
 def get_clicked_pos(pos, rows, width):
     gap = width // rows
@@ -19,7 +18,6 @@ def get_clicked_pos(pos, rows, width):
 if __name__ == '__main__':
 
     game = Game()
-    pygame.init()
 
     while True:
 
