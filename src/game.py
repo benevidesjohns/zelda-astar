@@ -212,7 +212,7 @@ class Game:
                 best_cost = total_cost
                 best_order_path_index = index
 
-        print('\n------------------------ MELHOR CAMINHO ENTRE AS DUNGEONS -----------------------\n')
+        print('\n---------------------------------- MELHOR CAMINHO ENTRE AS DUNGEONS ---------------------------------\n')
         print(order_paths[best_order_path_index])
 
         # Seleciona os paths da melhor ordem de caminho entre as dungeons
@@ -232,7 +232,7 @@ class Game:
         self.map.end_point = self.current_end_point = self.points[self.order[0]]
         self.map.set_end_node()
 
-        print('\n-------------------------------- OUTROS CAMINHOS --------------------------------\n')
+        print('\n------------------------------------------ OUTROS CAMINHOS ------------------------------------------\n')
         for i in range(len(order_paths)):
             if i != best_order_path_index:
                 print(order_paths[i], end='\n\n')

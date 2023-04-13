@@ -4,7 +4,7 @@ class Player(pygame.sprite.Sprite):
 
     def __init__(self, position):
         super().__init__()
-        self.image = pygame.image.load('assets/img/link_18x18.png')
+        self.image = pygame.image.load('assets/img/link.png')
         self.rect = self.image.get_rect()
         self.rect.topleft = position
 
