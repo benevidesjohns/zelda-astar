@@ -15,8 +15,8 @@ class Terrain:
         self.cost = cost
         self.image = image
 
+
 # Retorna um terreno
 def get_terrain(code):
-
     [image, cost] = TERRAINS[code]
     return Terrain(cost=cost, image=image)

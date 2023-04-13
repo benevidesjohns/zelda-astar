@@ -4,7 +4,7 @@ import pygame
 class Artifact(pygame.sprite.Sprite):
     def __init__(self, image, x, y):
         super().__init__()
-        self.image = pygame.image.load(f'img/{image}_18x18.png')
+        self.image = pygame.image.load(f'assets/img/{image}_18x18.png')
         self.rect = self.image.get_rect()
         self.rect.topleft = (x, y)
 
@@ -19,13 +19,18 @@ class Node(pygame.sprite.Sprite):
         self.y = row * size
         self.total_rows = total_rows
         self.cost = terrain.cost
-        self.image = pygame.image.load(f'img/terrains/{terrain.image}.png')
+        self.image = pygame.image.load(f'assets/img/terrains/{terrain.image}.png')
         self.rect = self.image.get_rect()
         self.rect.topleft = (self.x, self.y)
         self.artifact = pygame.sprite.Group()
         self.artifact_name = ''
         self.neighbors = []
 
+
+    # Retorna a posicao desse node na janela do pygame
+    def get_coord(self):
+        return self.x, self.y
+    
     # Retorna a posicao desse node no grid
     def get_pos(self):
         return self.row, self.col

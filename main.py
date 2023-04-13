@@ -1,7 +1,7 @@
-from game import Game
-from player import make_start
+from src.game import Game
+from src.player import make_start
+from src.utils import gif
 import pygame
-import gif
 import sys
 
 # Captura a posicao que o usuario clicou no grid
@@ -40,9 +40,7 @@ if __name__ == '__main__':
                 # Define o ponto inicial do mapa
                 game.current_start_point = game.map.start_point = (y, x)
                 game.map.set_start_node()
-                game.player = make_start(
-                    game.map.start_node.x, game.map.start_node.y
-                )
+                game.player = make_start(game.map.start_node.get_coord())
 
                 # Define a melhor ordem para passar pelas dungeons
                 game.set_best_order()
@@ -69,4 +67,4 @@ if __name__ == '__main__':
             if game.finished:
                 pygame.display.quit()
                 pygame.display.init()
-                gif.run('img/skyward-sword-zelda.gif')
+                gif.run('assets/img/skyward-sword-zelda.gif')

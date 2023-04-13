@@ -1,4 +1,5 @@
-from terrain import get_terrain
+from .terrain import get_terrain
+from .node import Node
 import os
 
 
@@ -19,8 +20,12 @@ class Map:
         return self.size == 28
 
     # Seta uma lista de nodes no mapa
-    def set_nodes(self, nodes):
-        self.nodes = nodes
+    def set_nodes(self):
+        for i, row in enumerate(self.terrains):
+            self.nodes.append([])
+            for j, terrain in enumerate(row):
+                node = Node(i, j, 18, terrain, self.size)
+                self.nodes[i].append(node)
 
     # Seta os nodes inicial e final do mapa
     def set_start_node(self):
@@ -30,7 +35,7 @@ class Map:
     def set_end_node(self):
         (x, y) = self.end_point
         self.end_node = self.nodes[x][y]
-    
+
     # Retorna um node a partir de um ponto
     def get_node(self, point):
         x, y = point
@@ -46,7 +51,7 @@ def get_map_code(map_name):
     }
 
     # Lê o arquivo com os códigos dos mapas
-    with open(f'{os.getcwd()}/maps_codes.txt') as file:
+    with open(f'{os.getcwd()}/assets/maps_codes.txt') as file:
         lines = file.readlines()
         for line in lines:
             line = line.split('\n')[0]

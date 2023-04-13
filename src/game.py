@@ -1,30 +1,32 @@
-from node import Node
-from maps import hyrule, dungeon_1, dungeon_2, dungeon_3
-from player import Player, make_start
-from algorithm import algorithm
+from .template.maps import hyrule, dungeon_1, dungeon_2, dungeon_3
+from .player import Player, make_start
+from .utils.algorithm import algorithm
 from itertools import permutations
 from pygame import mixer
 import pygame
 
+# Constantes
+NODE_SIZE = 18
+
 
 class Game:
     def __init__(self, start_point=None):
-        self.current_start_point = start_point
-        self.current_end_point = None
-        self.current_path = None
-        self.path = None
-        self.map = hyrule(self.current_start_point, None)
-        self.nodes_group = pygame.sprite.Group()
-        self.node_size = 18
+
+        # Janela do pygame
         self.window = None
-        self.player = None
+
+        # Gerencia os mapas do jogo
         self.state = 'hyrule'
         self.toggle_state = False
+
+        # Verificações do estado atual do jogo (started, running e finished)
         self.started = False
         self.running = False
         self.finished = False
-        self.total_cost = 0,
-        self.order = [],
+
+        # Pontos de referência
+        self.current_start_point = start_point
+        self.current_end_point = None
         self.points = {
             'dungeon_1': (32, 5),
             'dungeon_2': (1, 24),
@@ -32,6 +34,19 @@ class Game:
             'master_sword': (1, 2),
             'entrada_lost_woods': (5, 6)
         }
+
+        # Caminhos nos mapas
+        self.map = hyrule(self.current_start_point, None)
+        self.path = None
+        self.current_path = None
+        self.order = [],
+        self.total_cost = int(0)
+
+        # Nodes (elementos do mapa)
+        self.nodes_group = pygame.sprite.Group()
+        self.player = None
+
+        # Pygame Mixer
         self.hyrule_song = self.create_song('lost_woods')
         self.dungeon_song1 = self.create_song('song_of_storms', 0.7)
         self.dungeon_song2 = self.create_song('meet_zelda_again', 0.7)
@@ -40,20 +55,25 @@ class Game:
         self.winner_song = self.create_song('ikana_castle')
 
         self.ch_hyrule = mixer.Channel(0)
-        self.ch_dungeon = [
-            mixer.Channel(1), mixer.Channel(2), mixer.Channel(3)
-        ]
+        self.ch_dungeon = [mixer.Channel(i) for i in range(1, 4)]
         self.ch_winner = mixer.Channel(4)
         self.ch_pingente = mixer.Channel(5)
 
+        self.ch_hyrule.set_volume(0)
+        self.dungeon_song1.set_volume(0)
+        self.dungeon_song2.set_volume(0)
+        self.dungeon_song3.set_volume(0)
+        self.get_pingente.set_volume(0)
+        self.winner_song.set_volume(0)
+
+        # Constroi o mapa
         self.make_map(self.map)
         self.ch_hyrule.play(self.hyrule_song)
-
 
     # Criador de sons
     def create_song(self, path, volume=1):
         mixer.init()
-        sound = mixer.Sound(f'audio/{path}.mp3')
+        sound = mixer.Sound(f'assets/audio/{path}.mp3')
         sound.set_volume(volume)
         return sound
 
@@ -62,19 +82,18 @@ class Game:
         self.map = map
 
         # Constroi o grid (matriz de nodes)
-        self.map.set_nodes(self.make_grid())
+        self.map.set_nodes()
 
-        # Define os vizinhos de cada node
+        # Define os vizinhos de cada node e os adiciona ao grupo de nodes
         for row in self.map.nodes:
             for node in row:
+                self.nodes_group.add(node)
                 node.update_neighbors(self.map.nodes)
 
         # Define o ponto inicial do mapa e a posicao do jogador
         if self.map.start_point:
             self.map.set_start_node()
-            self.player = make_start(
-                self.map.start_node.x, self.map.start_node.y
-            )
+            self.player = make_start(self.map.start_node.get_coord())
 
         # Define o ponto final do mapa, caso esse seja estabelecido
         if self.map.end_point:
@@ -84,17 +103,10 @@ class Game:
         pygame.display.quit()
         pygame.display.init()
 
-        if self.map.is_dungeon():
-            pygame.display.set_caption(
-                f'Zelda Astar - {" ".join(self.map.name.capitalize().split("_"))}'
-            )
-            self.width = 504
-        else:
-            pygame.display.set_caption(
-                f'Zelda Astar - {self.map.name.capitalize()}'
-            )
-            self.width = 756
+        title = f'Zelda Astar - {" ".join(self.map.name.capitalize().split("_"))}'
+        pygame.display.set_caption(title)
 
+        self.width = 504 if self.map.is_dungeon() else 756
         self.window = pygame.display.set_mode((self.width, self.width))
 
         # Define o próximo caminho a seguir no mapa de hyrule
@@ -108,7 +120,8 @@ class Game:
                 hyrule(self.current_start_point, self.current_end_point)
             )
 
-            for ch_dungeon in self.ch_dungeon: ch_dungeon.stop()
+            for ch_dungeon in self.ch_dungeon:
+                ch_dungeon.stop()
             self.ch_hyrule.unpause()
 
             self.toggle_state = False
@@ -139,15 +152,13 @@ class Game:
 
     # Define a melhor ordem para passar pelas dungeons
     def set_best_order(self):
+
+        # Pontos de referência
         start = self.current_start_point
-        dungeons = [
-            self.points['dungeon_1'],
-            self.points['dungeon_2'],
-            self.points['dungeon_3']
-        ]
+        dungeons = [self.points[f'dungeon_{i}'] for i in range(1, 4)]
         end = self.points['entrada_lost_woods']
 
-        # Obtem o melhor caminho entre cada dungeon e os pontos final e inicial
+        # Obtem o melhor caminho entre os pontos de referência
         paths = {}
         for i in range(len(dungeons)):
             paths[f'start_dungeon_{i+1}'] = algorithm(
@@ -175,9 +186,10 @@ class Game:
 
         # Lista todas as ordens de caminhos possíveis
         permuts = list(permutations(['dungeon_1', 'dungeon_2', 'dungeon_3']))
-        orders = list(
-            map(lambda order: ['start'] + list(order) + ['entrada_lost_woods'], permuts)
-        )
+        orders = list(map(
+            lambda order: ['start'] + list(order) + ['entrada_lost_woods'],
+            permuts
+        ))
 
         # Soma os custos para todas as ordens de caminhos possíveis
         # e verifica a melhor ordem de caminho entre as dungeons
@@ -207,7 +219,8 @@ class Game:
         best_order_path = order_paths[best_order_path_index]['order']
         best_paths = []
         for i in range(len(best_order_path)-1):
-            best_paths.append(paths[f'{best_order_path[i]}_{best_order_path[i+1]}'])
+            best_paths.append(
+                paths[f'{best_order_path[i]}_{best_order_path[i+1]}'])
 
         # Define o order path e o primeiro end point do mapa
         self.path = best_paths
@@ -227,15 +240,29 @@ class Game:
     # Inicia o jogo
     def start(self):
         if self.state == 'hyrule':
-            self.reconstruct_path(self.current_path, list(reversed(self.current_path)))
+            self.reconstruct_path(
+                self.current_path,
+                list(reversed(self.current_path))
+            )
+
         else:
-            best_way = algorithm(self.map, self.map.start_node, self.map.end_node)
+            best_way = algorithm(
+                self.map,
+                self.map.start_node,
+                self.map.end_node
+            )
+
             self.reconstruct_path(best_way, list(reversed(best_way)))
 
     # Faz a animacao do player andando no mapa
     def draw_player(self, path, delay):
 
+        current_cost = 0
+
         for node in path:
+
+            # Calcula o custo
+            current_cost += node.cost
 
             # Desenha o player
             player = Player((node.x, node.y))
@@ -259,6 +286,9 @@ class Game:
                 node.artifact.draw(self.window)
 
             pygame.display.update()
+
+        print(self.state, current_cost)
+        self.total_cost += current_cost
 
     # Atualiza os nodes que definem o caminho encontrado pelo algoritmo
     def reconstruct_path(self, path, reverse_path):
@@ -288,20 +318,24 @@ class Game:
                 self.ch_hyrule.fadeout(3300)
                 pygame.time.delay(500)  # Pausa dramática
                 self.draw_player(path=final_path, delay=200)
-                
+
                 self.ch_hyrule.stop()
                 self.ch_winner.play(self.winner_song)
                 self.finished = True
+                print('Finish', self.total_cost)
 
         # Nas Dungeons -> pega o pingente e volta para Hyrule
         else:
             # Vai até o pingente
             self.draw_player(path=path, delay=20)
-            
-            for ch_dungeon in self.ch_dungeon: ch_dungeon.set_volume(0.3)
+
+            # Pega o pingente
+            for ch in self.ch_dungeon: ch.set_volume(0.2)
+
             self.ch_pingente.play(self.get_pingente, maxtime=2000)
             pygame.time.delay(2000)
-            for ch_dungeon in self.ch_dungeon: ch_dungeon.set_volume(0.7)
+
+            for ch in self.ch_dungeon: ch.set_volume(0.7)
 
             # Volta para a entrada da dungeon
             self.draw_player(path=reverse_path, delay=20)
@@ -311,29 +345,17 @@ class Game:
             self.toggle_state = True
             self.state = 'hyrule'
 
-   # Constroi o grid (matriz) com os nodes definidos no mapa
-    def make_grid(self):
-        grid = []
-        for i, row in enumerate(self.map.terrains):
-            grid.append([])
-            for j, terrain in enumerate(row):
-                node = Node(i, j, self.node_size, terrain, self.map.size)
-                self.nodes_group.add(node)
-                grid[i].append(node)
-
-        return grid
-
     # Desenha a grade
     def draw_grid(self):
         for i in range(self.map.size + 1):
             pygame.draw.line(
-                self.window, (70, 70, 70), (0, i * self.node_size),
-                (self.width, i * self.node_size)
+                self.window, (70, 70, 70), (0, i * NODE_SIZE),
+                (self.width, i * NODE_SIZE)
             )
             for j in range(self.map.size):
                 pygame.draw.line(
-                    self.window, (70, 70, 70), (j * self.node_size, 0),
-                    (j * self.node_size, self.width)
+                    self.window, (70, 70, 70), (j * NODE_SIZE, 0),
+                    (j * NODE_SIZE, self.width)
                 )
 
     # Desenha na tela
