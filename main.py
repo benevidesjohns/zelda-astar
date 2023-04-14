@@ -46,13 +46,17 @@ if __name__ == '__main__':
                 game.set_best_order()
                 game.started = True
 
+            # Executa ação do player ao trocar entre os mapas (dungeon/hyrule)
+            if event.type == pygame.WINDOWFOCUSGAINED and game.started and not game.finished:
+                game.start()
+
             # Verifica as teclas do teclado
             if event.type == pygame.KEYDOWN:
 
                 # SPACE - Inicia o jogo
                 if event.key == pygame.K_SPACE and game.started and not game.running and not game.finished:
                     game.start()
-                    # game.running = True
+                    game.running = True
 
                 # R - Reinicia o jogo
                 if event.key == pygame.K_r:
