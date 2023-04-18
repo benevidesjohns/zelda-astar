@@ -58,13 +58,6 @@ class Game:
         self.ch_winner = mixer.Channel(4)
         self.ch_pingente = mixer.Channel(5)
 
-        self.ch_hyrule.set_volume(0)
-        self.dungeon_song1.set_volume(0)
-        self.dungeon_song2.set_volume(0)
-        self.dungeon_song3.set_volume(0)
-        self.get_pingente.set_volume(0)
-        self.winner_song.set_volume(0)
-
         # Constroi o mapa
         self.make_map(self.map)
         self.ch_hyrule.play(self.hyrule_song)
@@ -304,7 +297,7 @@ class Game:
         if self.state == 'hyrule':
 
             # Percorre ate o ponto final
-            self.draw_player(path=path, delay=20)
+            self.draw_player(path=path, delay=60)
 
             # Entra na dungeon, caso o player nao tenha chegado ao objetivo final
             if self.order[0] != 'entrada_lost_woods':
@@ -340,7 +333,7 @@ class Game:
         # Nas Dungeons -> pega o pingente e volta para Hyrule
         else:
             # Vai até o pingente
-            self.draw_player(path=path, delay=20)
+            self.draw_player(path=path, delay=50)
 
             # Pega o pingente
             (start, end) = self.current_order
@@ -354,7 +347,7 @@ class Game:
             for ch in self.ch_dungeon: ch.set_volume(0.7)
 
             # Volta para a entrada da dungeon
-            self.draw_player(path=reverse_path, delay=20)
+            self.draw_player(path=reverse_path, delay=50)
 
             # Sai da dungeon
             (start, end) = self.current_order
