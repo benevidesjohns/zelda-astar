@@ -51,7 +51,8 @@ class Game:
         self.dungeon_song2 = self.create_song('meet_zelda_again', 0.7)
         self.dungeon_song3 = self.create_song('mayors_meeting', 0.7)
         self.get_pingente = self.create_song('small_item_get', 0.5)
-        self.winner_song = self.create_song('ikana_castle')
+        # self.winner_song = self.create_song('ikana_castle')
+        self.winner_song = self.create_song('hyrule')
 
         self.ch_hyrule = mixer.Channel(0)
         self.ch_dungeon = [mixer.Channel(i) for i in range(1, 4)]
@@ -298,6 +299,7 @@ class Game:
 
             # Percorre ate o ponto final
             self.draw_player(path=path, delay=60)
+            # self.draw_player(path=path, delay=1)
 
             # Entra na dungeon, caso o player nao tenha chegado ao objetivo final
             if self.order[0] != 'entrada_lost_woods':
@@ -321,12 +323,16 @@ class Game:
                 final_path = algorithm(
                     self.map, self.map.start_node, self.map.end_node)
 
-                self.ch_hyrule.fadeout(3300)
-                pygame.time.delay(500)  # Pausa dramática
-                self.draw_player(path=final_path, delay=200)
-
+                # self.ch_hyrule.fadeout(3300)
+                self.ch_hyrule.fadeout(500)
                 self.ch_hyrule.stop()
                 self.ch_winner.play(self.winner_song)
+                pygame.time.delay(2000)  # Pausa dramática
+                # pygame.time.delay(500)  # Pausa dramática
+                self.draw_player(path=final_path, delay=450)
+
+                # self.ch_hyrule.stop()
+                # self.ch_winner.play(self.winner_song)
                 self.finished = True
                 self.running = False
 
@@ -334,6 +340,7 @@ class Game:
         else:
             # Vai até o pingente
             self.draw_player(path=path, delay=50)
+            # self.draw_player(path=path, delay=1)
 
             # Pega o pingente
             (start, end) = self.current_order
@@ -348,6 +355,7 @@ class Game:
 
             # Volta para a entrada da dungeon
             self.draw_player(path=reverse_path, delay=50)
+            # self.draw_player(path=reverse_path, delay=1)
 
             # Sai da dungeon
             (start, end) = self.current_order
