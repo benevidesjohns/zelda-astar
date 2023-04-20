@@ -11,7 +11,6 @@ class Game:
 
         # Janela do pygame
         self.window = None
-        self.total_volume = .1
 
         # Gerencia os mapas do jogo
         self.state = 'hyrule'
@@ -26,9 +25,9 @@ class Game:
         self.current_start_point = start_point
         self.current_end_point = None
         self.points = {
-            'dungeon_1': (32, 5),
+            'dungeon_1': (1, 24),
             'dungeon_2': (17, 39),
-            'dungeon_3': (1, 24),
+            'dungeon_3': (32, 5),
             'master_sword': (1, 2),
             'entrada_lost_woods': (5, 6)
         }
@@ -47,13 +46,13 @@ class Game:
         self.player = None
 
         # Pygame Mixer
-        self.hyrule_song = self.create_song('lost_woods', self.total_volume)
-        self.dungeon_song1 = self.create_song('song_of_storms', 0.7 * self.total_volume)
-        self.dungeon_song2 = self.create_song('meet_zelda_again', 0.7 * self.total_volume)
-        self.dungeon_song3 = self.create_song('mayors_meeting', 0.7 * self.total_volume)
-        self.get_pingente = self.create_song('small_item_get', 0.5 * self.total_volume)
+        self.hyrule_song = self.create_song('lost_woods')
+        self.dungeon_song1 = self.create_song('song_of_storms', 0.7)
+        self.dungeon_song2 = self.create_song('meet_zelda_again', 0.7)
+        self.dungeon_song3 = self.create_song('mayors_meeting', 0.7)
+        self.get_pingente = self.create_song('small_item_get', 0.5)
         # self.winner_song = self.create_song('ikana_castle')
-        self.winner_song = self.create_song('hyrule', self.total_volume)
+        self.winner_song = self.create_song('hyrule')
 
         self.ch_hyrule = mixer.Channel(0)
         self.ch_dungeon = [mixer.Channel(i) for i in range(1, 4)]
@@ -173,11 +172,11 @@ class Game:
                 )
 
         print('\n----------------------------------------------- CUSTOS ----------------------------------------------\n')
-
+        
         # Calcula os custos para cada caminho
         for key, nodes in paths.items():
             path_cost = sum(list(map(lambda node: node.cost, nodes)))
-            self.costs[key] = path_cost - nodes[0].cost
+            self.costs[key] = path_cost - nodes[-1].cost
             (start, end) = key.split("-")
             start = '{:9}'.format(start)
             print(f'cost: {self.costs[key]}, path: {start} --> {end}')
@@ -237,8 +236,7 @@ class Game:
 
         print('\n----------------------------------------- CAMINHO PERCORRIDO -----------------------------------------\n')
         (start, end) = self.current_order
-        print(
-            f'\rtotal_cost: {self.total_cost}, cost: {self.total_cost}, {start} --> {end}', end='')
+        print(f'\rtotal_cost: {self.total_cost}, cost: {self.total_cost}, {start} --> {end}', end='')
 
     # Inicia o jogo
     def start(self):
@@ -260,16 +258,13 @@ class Game:
     # Faz a animacao do player andando no mapa
     def draw_player(self, path, delay):
         current_cost = 0
-        for i, node in enumerate(path):
+        for node in path:
 
             # Calcula o custo
-            if i > 0:
-                current_cost += node.cost
-                self.total_cost += node.cost
-
+            current_cost += node.cost
+            self.total_cost += node.cost
             (start, end) = self.current_order
-            print(
-                f'\rtotal_cost: {self.total_cost},cost: {current_cost}, {start} --> {end}', end='')
+            print(f'\rtotal_cost: {self.total_cost}, cost: {current_cost}, {start} --> {end}', end='')
 
             # Desenha o player
             player = Player((node.x, node.y))
@@ -310,8 +305,7 @@ class Game:
             if self.order[0] != 'entrada_lost_woods':
                 (start, end) = self.current_order
                 self.current_order = (f'entrada_{end}', 'pingente')
-                print(
-                    f'\rtotal_cost: {self.total_cost}, cost: 0, entrada_{end} --> pingente', end='')
+                print(f'\rtotal_cost: {self.total_cost}, cost: 0, entrada_{end} --> pingente', end='')
                 self.current_start_point = self.current_end_point
                 self.toggle_state = True
                 self.state = self.order.pop(0)
@@ -320,8 +314,7 @@ class Game:
             else:
                 (start, end) = self.current_order
                 self.current_order = (end, 'master_sword')
-                print(
-                    f'\rtotal_cost: {self.total_cost}, cost: 0, {end} --> master_sword', end='')
+                print(f'\rtotal_cost: {self.total_cost}, cost: 0, {end} --> master_sword', end='')
                 self.map.start_point = self.current_end_point
                 self.map.end_point = self.points['master_sword']
                 self.map.set_start_node()
@@ -351,18 +344,14 @@ class Game:
 
             # Pega o pingente
             (start, end) = self.current_order
-            self.current_order = (
-                'pingente', f'saida_{start.split("entrada_")[1]}')
-            print(
-                f'\rtotal_cost: {self.total_cost}, cost: 0, pingente --> saida_{start.split("entrada_")[1]}', end='')
-            for ch in self.ch_dungeon:
-                ch.set_volume(0.2)
+            self.current_order = ('pingente', f'saida_{start.split("entrada_")[1]}')
+            print(f'\rtotal_cost: {self.total_cost}, cost: 0, pingente --> saida_{start.split("entrada_")[1]}', end='')
+            for ch in self.ch_dungeon: ch.set_volume(0.2)
 
             self.ch_pingente.play(self.get_pingente, maxtime=2000)
             pygame.time.delay(2000)
 
-            for ch in self.ch_dungeon:
-                ch.set_volume(0.7)
+            for ch in self.ch_dungeon: ch.set_volume(0.7)
 
             # Volta para a entrada da dungeon
             self.draw_player(path=reverse_path, delay=50)
@@ -371,8 +360,7 @@ class Game:
             # Sai da dungeon
             (start, end) = self.current_order
             self.current_order = (end.split('saida_')[1], self.order[0])
-            print(
-                f'\rtotal_cost: {self.total_cost}, cost: 0, {end.split("saida_")[1]} --> {self.order[0]}', end='')
+            print(f'\rtotal_cost: {self.total_cost}, cost: 0, {end.split("saida_")[1]} --> {self.order[0]}', end='')
             self.current_end_point = self.points[self.order[0]]
             self.toggle_state = True
             self.state = 'hyrule'
