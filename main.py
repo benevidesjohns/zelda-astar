@@ -8,11 +8,7 @@ import sys
 def get_clicked_pos(pos, rows, width):
     gap = width // rows
     y, x = pos
-
-    row = x // gap
-    col = y // gap
-
-    return row, col
+    return x // gap, y // gap
 
 
 if __name__ == '__main__':
@@ -35,12 +31,13 @@ if __name__ == '__main__':
 
                 # Captura a posição na tela onde foi clicado com o mouse
                 pos = pygame.mouse.get_pos()
-                y, x = get_clicked_pos(pos, game.map.size, game.width)
+                x, y = get_clicked_pos(pos, game.map.size, game.width)
 
                 # Define o ponto inicial do mapa
-                game.current_start_point = game.map.start_point = (y, x)
+                game.current_start_point = game.map.start_point = (x, y)
                 game.map.set_start_node()
                 game.player = make_start(game.map.start_node.get_coord())
+                print(f'\nStart Point = ({x}, {y})')
 
                 # Define a melhor ordem para passar pelas dungeons
                 game.set_best_order()

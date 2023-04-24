@@ -10,13 +10,12 @@ TERRAINS = {
 
 
 class Terrain:
-
     def __init__(self, cost, image):
         self.cost = cost
         self.image = image
 
 
-# Retorna um terreno
+# Retorna um terreno a partir do codigo (letra)
 def get_terrain(code):
     [image, cost] = TERRAINS[code]
     return Terrain(cost=cost, image=image)

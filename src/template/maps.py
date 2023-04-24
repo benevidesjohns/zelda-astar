@@ -10,21 +10,21 @@ class Map:
         self.size = size
         self.start_point = start_point
         self.end_point = end_point
-        self.terrains = terrains
-        self.nodes = []
         self.start_node = None
         self.end_node = None
+        self.terrains = terrains
+        self.nodes = []
 
     # Verifica se o mapa é uma dungeon
     def is_dungeon(self):
         return self.size == 28
 
-    # Seta uma lista de nodes no mapa
+    # Seta uma matriz de nodes referente ao mapa atual
     def set_nodes(self):
         for i, row in enumerate(self.terrains):
             self.nodes.append([])
             for j, terrain in enumerate(row):
-                node = Node(i, j, 18, terrain, self.size)
+                node = Node(i, j, terrain)
                 self.nodes[i].append(node)
 
     # Seta os nodes inicial e final do mapa
@@ -42,7 +42,7 @@ class Map:
         return self.nodes[x][y]
 
 # Retorna os códigos de um mapa
-def get_map_code(map_name):
+def get_map_codes(map_name):
     map_code = {
         'HYRULE': [],
         'DUNGEON1': [],
@@ -83,7 +83,7 @@ def get_map_terrains(codes):
 
 # Retorna o mapa de hyrule
 def hyrule(start, end):
-    codes = get_map_code('HYRULE')
+    codes = get_map_codes('HYRULE')
     terrains = get_map_terrains(codes)
 
     return Map(
@@ -96,7 +96,7 @@ def hyrule(start, end):
 
 # Retorna o mapa da dungeon 1
 def dungeon_1():
-    codes = get_map_code('DUNGEON1')
+    codes = get_map_codes('DUNGEON1')
     terrains = get_map_terrains(codes)
 
     return Map(
@@ -109,7 +109,7 @@ def dungeon_1():
 
 # Retorna o mapa da dungeon 2
 def dungeon_2():
-    codes = get_map_code('DUNGEON2')
+    codes = get_map_codes('DUNGEON2')
     terrains = get_map_terrains(codes)
 
     return Map(
@@ -122,7 +122,7 @@ def dungeon_2():
 
 # Retorna o mapa da dungeon 3
 def dungeon_3():
-    codes = get_map_code('DUNGEON3')
+    codes = get_map_codes('DUNGEON3')
     terrains = get_map_terrains(codes)
 
     return Map(

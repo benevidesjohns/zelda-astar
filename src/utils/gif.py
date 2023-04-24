@@ -2,7 +2,6 @@ import pygame
 import sys
 from PIL import Image
 
-size = (756, 422)
 FORMAT = "RGBA"
 
 
@@ -27,7 +26,7 @@ def run(gif_image):
     # Carrega a janela do pygame
     screen = pygame.display.set_mode((gif_img.width, gif_img.height))
     pygame.display.set_caption('Zelda Astar - YOU WIN')
-    
+
     current_frame = 0
     clock = pygame.time.Clock()
 

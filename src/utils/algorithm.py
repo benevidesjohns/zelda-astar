@@ -1,6 +1,4 @@
 from queue import PriorityQueue
-import pygame
-import sys
 
 
 # Funcao Heuristica (Distancia de Manhattan)
@@ -32,11 +30,6 @@ def algorithm(map, start_node, end_node):
 
     # Executa o algoritmo enquanto a fila de prioridade nao estiver vazia
     while not closed_list.empty():
-        # Verifica se deve sair do jogo
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
 
         # Pega o node com mais prioridade da lista fechada e o remove das duas listas
         current = closed_list.get()[2]

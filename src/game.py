@@ -172,7 +172,7 @@ class Game:
                 )
 
         print('\n----------------------------------------------- CUSTOS ----------------------------------------------\n')
-        
+
         # Calcula os custos para cada caminho
         for key, nodes in paths.items():
             path_cost = sum(list(map(lambda node: node.cost, nodes)))
@@ -236,7 +236,8 @@ class Game:
 
         print('\n----------------------------------------- CAMINHO PERCORRIDO -----------------------------------------\n')
         (start, end) = self.current_order
-        print(f'\rtotal_cost: {self.total_cost}, cost: {self.total_cost}, {start} --> {end}', end='')
+        print(
+            f'\rtotal_cost: {self.total_cost}, cost: {self.total_cost}, {start} --> {end}', end='')
 
     # Inicia o jogo
     def start(self):
@@ -256,32 +257,55 @@ class Game:
             self.reconstruct_path(best_way, list(reversed(best_way)))
 
     # Faz a animacao do player andando no mapa
-    def draw_player(self, path, delay):
+    def draw_player(self, path, delay, trace_color=(0,0,0)):
         current_cost = 0
-        for node in path:
+        for i, node in enumerate(path):
 
             # Calcula o custo
             current_cost += node.cost
             self.total_cost += node.cost
             (start, end) = self.current_order
-            print(f'\rtotal_cost: {self.total_cost}, cost: {current_cost}, {start} --> {end}', end='')
+            print(
+                f'\rtotal_cost: {self.total_cost}, cost: {current_cost}, {start} --> {end}', end='')
 
             # Desenha o player
-            player = Player((node.x, node.y))
+            player = Player(node.get_coord())
             self.player.add(player)
             self.player.draw(self.window)
             pygame.display.update()
             pygame.time.delay(delay)
 
-            # Remove o player
+            # Remove o player caso não tenha chegado no final do path
             if node != path[-1]:
                 self.player.add(node)
                 self.player.draw(self.window)
                 self.player.empty()
 
-            # Redesenha a grade
+            # Redesenha a grade em torno do node atual
             if self.state == 'hyrule':
-                self.draw_grid()
+                x, y = node.get_coord()
+                pygame.draw.line(
+                    self.window, (70, 70, 70), (x, y), (x+18, y)
+                )
+                pygame.draw.line(
+                    self.window, (70, 70, 70), (x, y+18), (x+18, y+18)
+                )
+                pygame.draw.line(
+                    self.window, (70, 70, 70), (x, y), (x, y+18)
+                )
+                pygame.draw.line(
+                    self.window, (70, 70, 70), (x+18, y), (x+18, y+18)
+                )
+
+            # Desenha o rastro do personagem
+            if node != path[-1]:
+                next_node = path[i+1]
+                xi, yi = node.get_coord()
+                xf, yf = next_node.get_coord()
+
+                pygame.draw.line(
+                    self.window, trace_color, (xi+9, yi+9), (xf+9, yf+9), 4
+                )
 
             # Redesenha os artifacts
             if not node.artifact is None and 'pingente' not in node.artifact_name:
@@ -305,7 +329,8 @@ class Game:
             if self.order[0] != 'entrada_lost_woods':
                 (start, end) = self.current_order
                 self.current_order = (f'entrada_{end}', 'pingente')
-                print(f'\rtotal_cost: {self.total_cost}, cost: 0, entrada_{end} --> pingente', end='')
+                print(
+                    f'\rtotal_cost: {self.total_cost}, cost: 0, entrada_{end} --> pingente', end='')
                 self.current_start_point = self.current_end_point
                 self.toggle_state = True
                 self.state = self.order.pop(0)
@@ -314,7 +339,8 @@ class Game:
             else:
                 (start, end) = self.current_order
                 self.current_order = (end, 'master_sword')
-                print(f'\rtotal_cost: {self.total_cost}, cost: 0, {end} --> master_sword', end='')
+                print(
+                    f'\rtotal_cost: {self.total_cost}, cost: 0, {end} --> master_sword', end='')
                 self.map.start_point = self.current_end_point
                 self.map.end_point = self.points['master_sword']
                 self.map.set_start_node()
@@ -340,27 +366,30 @@ class Game:
         else:
             # Vai até o pingente
             self.draw_player(path=path, delay=50)
-            # self.draw_player(path=path, delay=1)
 
             # Pega o pingente
             (start, end) = self.current_order
-            self.current_order = ('pingente', f'saida_{start.split("entrada_")[1]}')
-            print(f'\rtotal_cost: {self.total_cost}, cost: 0, pingente --> saida_{start.split("entrada_")[1]}', end='')
-            for ch in self.ch_dungeon: ch.set_volume(0.2)
+            self.current_order = (
+                'pingente', f'saida_{start.split("entrada_")[1]}')
+            print(
+                f'\rtotal_cost: {self.total_cost}, cost: 0, pingente --> saida_{start.split("entrada_")[1]}', end='')
+            for ch in self.ch_dungeon:
+                ch.set_volume(0.2)
 
             self.ch_pingente.play(self.get_pingente, maxtime=2000)
             pygame.time.delay(2000)
 
-            for ch in self.ch_dungeon: ch.set_volume(0.7)
+            for ch in self.ch_dungeon:
+                ch.set_volume(0.7)
 
             # Volta para a entrada da dungeon
-            self.draw_player(path=reverse_path, delay=50)
-            # self.draw_player(path=reverse_path, delay=1)
+            self.draw_player(path=reverse_path, delay=50, trace_color=(255,255,255))
 
             # Sai da dungeon
             (start, end) = self.current_order
             self.current_order = (end.split('saida_')[1], self.order[0])
-            print(f'\rtotal_cost: {self.total_cost}, cost: 0, {end.split("saida_")[1]} --> {self.order[0]}', end='')
+            print(
+                f'\rtotal_cost: {self.total_cost}, cost: 0, {end.split("saida_")[1]} --> {self.order[0]}', end='')
             self.current_end_point = self.points[self.order[0]]
             self.toggle_state = True
             self.state = 'hyrule'
@@ -390,13 +419,9 @@ class Game:
         # Desenha as imagens no mapa de Hyrule
         if not self.map.is_dungeon():
             for local, coord in self.points.items():
-                (x, y) = coord
-                node = self.map.nodes[x][y]
-                if 'dungeon' in local:
-                    node.set_artifact('entrada_dungeon')
-                else:
-                    node.set_artifact(local)
-
+                node = self.map.get_node(coord)
+                artifact_name = 'entrada_dungeon' if 'dungeon' in local else local
+                node.set_artifact(artifact_name)
                 node.artifact.draw(self.window)
 
         # Desenha as imagens no mapa da Dungeon
