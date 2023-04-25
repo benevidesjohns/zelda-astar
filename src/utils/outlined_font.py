@@ -4,6 +4,8 @@
 import pygame
 
 _circle_cache = {}
+
+
 def _circlepoints(r):
     r = int(round(r))
     if r in _circle_cache:
@@ -23,6 +25,7 @@ def _circlepoints(r):
     points += [(x, -y) for x, y in points if y]
     points.sort()
     return points
+
 
 def render(text, font, gfcolor=pygame.Color('dodgerblue'), ocolor=(255, 255, 255), opx=2, antialias=False):
     textsurface = font.render(text, antialias, gfcolor).convert_alpha()

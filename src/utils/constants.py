@@ -1,9 +1,17 @@
 import pygame
 
-FORMAT = "RGBA"
-BORDER_TEXT_COLOR = (0, 0, 0)
-TEXT_COLOR = (130, 130, 130)
+# Cores
+BLACK = (0, 0, 0)
+RED = (130, 130, 130)
+GRAY = (70, 70, 70)
 
+# Formato das Cores
+FORMAT = "RGBA"
+
+# Fontes
 pygame.font.init()
-FONT = pygame.font.SysFont('copperplategothic', 11, True, False)
-FONT_GAME_END = pygame.font.SysFont('copperplategothic', 25, True, False)
+CPG11 = pygame.font.SysFont('copperplategothic', 11, True, False)
+CPG25 = pygame.font.SysFont('copperplategothic', 25, True, False)
+
+# Tamanho dos Nodes
+NODE_SIZE = 18

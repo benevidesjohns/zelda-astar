@@ -1,5 +1,7 @@
 import pygame
 
+from ..utils.constants import NODE_SIZE
+
 
 class Artifact(pygame.sprite.Sprite):
     def __init__(self, image, x, y):
@@ -14,7 +16,6 @@ class Node(pygame.sprite.Sprite):
         super().__init__()
 
         # Detalhes do Node
-        self.size = 18
         self.cost = terrain.cost
         self.neighbors = []
 
@@ -23,8 +24,8 @@ class Node(pygame.sprite.Sprite):
         self.col = col
 
         # Posição na janela do pygame
-        self.x = col * self.size
-        self.y = row * self.size
+        self.x = col * NODE_SIZE
+        self.y = row * NODE_SIZE
 
         # Detalhes do sprite
         self.image = pygame.image.load(

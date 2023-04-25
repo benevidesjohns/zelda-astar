@@ -1,12 +1,11 @@
 import pygame
 import sys
 
-from .utils.constants import FONT, BORDER_TEXT_COLOR, TEXT_COLOR
+from .utils.constants import CPG11, GRAY, RED, BLACK, NODE_SIZE
 from .utils.outlined_font import render
 
 
 class Player(pygame.sprite.Sprite):
-
     def __init__(self, position):
         super().__init__()
         self.image = pygame.image.load('assets/img/link.png')
@@ -15,7 +14,7 @@ class Player(pygame.sprite.Sprite):
 
 
 # Faz a animacao do player andando no mapa
-def move(window, state, player_group, total_cost, width, current_order, path, delay=60, trace_color=(0, 0, 0)):
+def move(window, state, player_group, total_cost, width, current_order, path, delay=60, trace_color=BLACK):
     current_cost = 0
     for i, node in enumerate(path):
 
@@ -55,16 +54,16 @@ def move(window, state, player_group, total_cost, width, current_order, path, de
         if state == 'hyrule':
             x, y = node.get_coord()
             pygame.draw.line(
-                window, (70, 70, 70), (x, y), (x+18, y)
+                window, GRAY, (x, y), (x+NODE_SIZE, y)
             )
             pygame.draw.line(
-                window, (70, 70, 70), (x, y+18), (x+18, y+18)
+                window, GRAY, (x, y+NODE_SIZE), (x+NODE_SIZE, y+NODE_SIZE)
             )
             pygame.draw.line(
-                window, (70, 70, 70), (x, y), (x, y+18)
+                window, GRAY, (x, y), (x, y+NODE_SIZE)
             )
             pygame.draw.line(
-                window, (70, 70, 70), (x+18, y), (x+18, y+18)
+                window, GRAY, (x+NODE_SIZE, y), (x+NODE_SIZE, y+NODE_SIZE)
             )
 
         # Desenha o rastro do personagem
@@ -74,7 +73,9 @@ def move(window, state, player_group, total_cost, width, current_order, path, de
             xf, yf = next_node.get_coord()
 
             pygame.draw.line(
-                window, trace_color, (xi+9, yi+9), (xf+9, yf+9), 4
+                window, trace_color,
+                (xi+(NODE_SIZE//2), yi+(NODE_SIZE//2)),
+                (xf+(NODE_SIZE//2), yf+(NODE_SIZE//2)), 4
             )
 
         # Redesenha os artifacts
@@ -87,7 +88,8 @@ def move(window, state, player_group, total_cost, width, current_order, path, de
         window.blit(rect, (width - 225, 0))
 
         text_total_cost = '{:4}'.format(total_cost)
-        title = render(f'CUSTO TOTAL: {text_total_cost},  CUSTO: {current_cost}', FONT, TEXT_COLOR, BORDER_TEXT_COLOR)
+        title = render(
+            f'CUSTO TOTAL: {text_total_cost},  CUSTO: {current_cost}', CPG11, RED, GRAY)
         title_rect = title.get_rect(center=(width - 110, 15))
         window.blit(title, title_rect)
 

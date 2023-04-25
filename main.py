@@ -2,10 +2,10 @@ import pygame
 import time
 import sys
 
-from src.game import Game
-from src.player import make_start
-from src import gif
 from src.utils.best_order_path import set_best_order
+from src.player import make_start
+from src.game import Game
+from src import game_end
 
 
 # Captura a posicao que o usuario clicou no grid
@@ -45,7 +45,8 @@ if __name__ == '__main__':
                 print(f'\nStart Point = ({x}, {y})')
 
                 # Define a melhor ordem para passar pelas dungeons
-                settings = set_best_order(game.current_start_point, game.points, game.map)
+                settings = set_best_order(
+                    game.current_start_point, game.points, game.map)
 
                 game.best_order = settings['best_order']
                 game.path = settings['path']
@@ -84,7 +85,8 @@ if __name__ == '__main__':
 
                 total_cost = game.total_cost
                 elapsed_time = end_time - start_time
-                best_order = [x.replace('dungeon_', 'DG ') for x in game.best_order if 'dungeon_' in x]
+                best_order = [x.replace('dungeon_', 'DG ')
+                              for x in game.best_order if 'dungeon_' in x]
 
                 # Armazena as estatísticas do game
                 statistics = {
@@ -95,4 +97,4 @@ if __name__ == '__main__':
 
                 pygame.display.quit()
                 pygame.display.init()
-                gif.run('assets/img/skyward-sword-zelda.gif', statistics)
+                game_end.run('assets/img/skyward-sword-zelda.gif', statistics)

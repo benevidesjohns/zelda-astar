@@ -1,6 +1,7 @@
+import os
+
 from .terrain import get_terrain
 from .node import Node
-import os
 
 
 class Map:
@@ -27,11 +28,12 @@ class Map:
                 node = Node(i, j, terrain)
                 self.nodes[i].append(node)
 
-    # Seta os nodes inicial e final do mapa
+    # Seta o node inicial do mapa
     def set_start_node(self):
         (x, y) = self.start_point
         self.start_node = self.nodes[x][y]
 
+    # Seta o node final do mapa
     def set_end_node(self):
         (x, y) = self.end_point
         self.end_node = self.nodes[x][y]
@@ -40,6 +42,7 @@ class Map:
     def get_node(self, point):
         x, y = point
         return self.nodes[x][y]
+
 
 # Retorna os códigos de um mapa
 def get_map_codes(map_name):
@@ -71,6 +74,7 @@ def get_map_codes(map_name):
     # Retorna um dicionário com o nome e os códigos do mapa
     return map_code[map_name]
 
+
 # Retorna os terrenos do mapa
 def get_map_terrains(codes):
     terrains = []
@@ -80,6 +84,7 @@ def get_map_terrains(codes):
             terrains[i].append(get_terrain(code))
 
     return terrains
+
 
 # Retorna o mapa de hyrule
 def hyrule(start, end):
@@ -94,6 +99,7 @@ def hyrule(start, end):
         terrains=terrains
     )
 
+
 # Retorna o mapa da dungeon 1
 def dungeon_1():
     codes = get_map_codes('DUNGEON1')
@@ -107,6 +113,7 @@ def dungeon_1():
         terrains=terrains
     )
 
+
 # Retorna o mapa da dungeon 2
 def dungeon_2():
     codes = get_map_codes('DUNGEON2')
@@ -119,6 +126,7 @@ def dungeon_2():
         end_point=(2, 13),
         terrains=terrains
     )
+
 
 # Retorna o mapa da dungeon 3
 def dungeon_3():

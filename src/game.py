@@ -5,7 +5,7 @@ from .player import make_start, move
 from .utils.algorithm import algorithm
 from .utils.mixer import Mixer
 from .utils.outlined_font import render
-from .utils.constants import FONT, BORDER_TEXT_COLOR, TEXT_COLOR
+from .utils.constants import CPG11, BLACK, RED, GRAY, NODE_SIZE
 
 
 class Game:
@@ -139,7 +139,8 @@ class Game:
         if self.state == 'hyrule':
 
             # Percorre ate o ponto final
-            self.total_cost = move(self.window, self.state, self.player, self.total_cost, self.width, self.current_order, path)
+            self.total_cost = move(self.window, self.state, self.player,
+                                   self.total_cost, self.width, self.current_order, path)
 
             # Entra na dungeon, caso o player nao tenha chegado ao objetivo final
             if self.order[0] != 'entrada_lost_woods':
@@ -166,8 +167,9 @@ class Game:
                     self.map, self.map.start_node, self.map.end_node)
 
                 self.mixer.fadeout_hyrule()
-                # pygame.time.delay(500)  # Pausa dramática
-                self.total_cost = move(self.window, self.state, self.player, self.total_cost, self.width, self.current_order, final_path, 200)
+                pygame.time.delay(500)  # Pausa dramática
+                self.total_cost = move(self.window, self.state, self.player,
+                                       self.total_cost, self.width, self.current_order, final_path, 200)
                 self.mixer.play_winner()
 
                 self.finished = True
@@ -176,7 +178,8 @@ class Game:
         # Nas Dungeons -> pega o pingente e volta para Hyrule
         else:
             # Vai até o pingente
-            self.total_cost = move(self.window, self.state, self.player, self.total_cost, self.width, self.current_order, path)
+            self.total_cost = move(self.window, self.state, self.player,
+                                   self.total_cost, self.width, self.current_order, path)
 
             # Pega o pingente
             (start, end) = self.current_order
@@ -186,10 +189,11 @@ class Game:
                 f'\rtotal_cost: {self.total_cost}, cost: 0, pingente --> saida_{start.split("entrada_")[1]}', end='')
 
             self.mixer.play_get_pingente()
-            # pygame.time.delay(2000)
+            pygame.time.delay(2000)
 
             # Volta para a entrada da dungeon
-            self.total_cost = move(self.window, self.state, self.player, self.total_cost, self.width, self.current_order, reverse_path, 60, (255, 255, 255))
+            self.total_cost = move(self.window, self.state, self.player, self.total_cost,
+                                   self.width, self.current_order, reverse_path, 60, (255, 255, 255))
 
             # Sai da dungeon
             (start, end) = self.current_order
@@ -204,13 +208,15 @@ class Game:
     def draw_grid(self):
         for i in range(self.map.size + 1):
             pygame.draw.line(
-                self.window, (70, 70, 70), (0, i * 18),
-                (self.width, i * 18)
+                self.window, GRAY,
+                (0, i * NODE_SIZE),
+                (self.width, i * NODE_SIZE)
             )
             for j in range(self.map.size):
                 pygame.draw.line(
-                    self.window, (70, 70, 70), (j * 18, 0),
-                    (j * 18, self.width)
+                    self.window, GRAY,
+                    (j * NODE_SIZE, 0),
+                    (j * NODE_SIZE, self.width)
                 )
 
     # Desenha na tela
@@ -246,7 +252,8 @@ class Game:
         self.window.blit(rect, (self.width - 225, 0))
 
         text_total_cost = '{:4}'.format(self.total_cost)
-        title = render(f'CUSTO TOTAL: {text_total_cost},  CUSTO:    0', FONT, TEXT_COLOR, BORDER_TEXT_COLOR)
+        title = render(
+            f'CUSTO TOTAL: {text_total_cost},  CUSTO:    0', CPG11, RED, BLACK)
         title_rect = title.get_rect(center=(self.width - 110, 15))
         self.window.blit(title, title_rect)
 

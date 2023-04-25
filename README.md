@@ -23,6 +23,22 @@
 - [Python 3.11.2](https://www.python.org/downloads/)
 
 <p>Bibliotecas:</p>
+```bash
+
+```
+
+<p>Instruções:</p>
+
+- Crie um [ambiente virtual](https://docs.python.org/3/library/venv.html)
+- Ative o ambiente
+- Instale as bibliotecas necessárias
+```bash
+pip install requirements.txt
+```
+- Execute o projeto
+```bash
+python main.py
+```
 
 <h3>:rocket: Desenvolvido por</h3>
 <p>William Jefferson e João Benevides</p>

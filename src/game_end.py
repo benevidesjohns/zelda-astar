@@ -1,9 +1,9 @@
+from PIL import Image
 import pygame
 import sys
-from PIL import Image
 
 from .utils.outlined_font import render
-from .utils.constants import FORMAT, FONT_GAME_END, BORDER_TEXT_COLOR, TEXT_COLOR
+from .utils.constants import FORMAT, CPG25, BLACK, RED
 
 
 def pil_to_game(img):
@@ -74,18 +74,18 @@ def run(gif_image, statistics):
         screen.blit(rect, (0, 0))
 
         # Desenha as estatísticas na tela
-        title = render('PARABÉNS!  VOCÊ  VENCEU!', FONT_GAME_END, TEXT_COLOR, BORDER_TEXT_COLOR)
+        title = render('PARABÉNS!  VOCÊ  VENCEU!', CPG25, RED, BLACK)
         title_rect = title.get_rect(center=(gif_img.width // 2, 20))
         screen.blit(title, title_rect)
 
         for i, text in enumerate(texts):
-            screen.blit(render(text, FONT_GAME_END, TEXT_COLOR, BORDER_TEXT_COLOR), (20, 142 + 35*i))
+            screen.blit(render(text, CPG25, RED, BLACK), (20, 142 + 35*i))
 
-        game = render('ZELDA  ASTAR', FONT_GAME_END, TEXT_COLOR, BORDER_TEXT_COLOR)
+        game = render('ZELDA  ASTAR', CPG25, RED, BLACK)
         game_rect = game.get_rect(center=(gif_img.width // 2, gif_img.height - 50))
         screen.blit(game, game_rect)
 
-        credits = render('FEITO COM  <3  BY:  WILLIAM  E  JOÃO', FONT_GAME_END, TEXT_COLOR, BORDER_TEXT_COLOR)
+        credits = render('FEITO COM  <3  BY:  WILLIAM  E  JOÃO', CPG25, RED, BLACK)
         credits_rect = credits.get_rect(center=(gif_img.width // 2, gif_img.height - 20))
         screen.blit(credits, credits_rect)
         
