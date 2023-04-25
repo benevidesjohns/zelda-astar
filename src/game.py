@@ -40,6 +40,7 @@ class Game:
         self.current_path = None
         self.costs = {}
         self.total_cost = int(0)
+        self.best_order = []
 
         # Nodes (elementos do mapa)
         self.nodes_group = pygame.sprite.Group()
@@ -211,6 +212,8 @@ class Game:
 
         print('\n---------------------------------- MELHOR CAMINHO ENTRE AS DUNGEONS ---------------------------------\n')
         print(order_paths[best_order_path_index])
+
+        self.best_order = orders[best_order_path_index].copy()
 
         # Seleciona os paths da melhor ordem de caminho entre as dungeons
         best_order_path = order_paths[best_order_path_index]['order']
