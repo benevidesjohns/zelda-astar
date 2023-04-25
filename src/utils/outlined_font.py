@@ -24,8 +24,8 @@ def _circlepoints(r):
     points.sort()
     return points
 
-def render(text, font, gfcolor=pygame.Color('dodgerblue'), ocolor=(255, 255, 255), opx=2):
-    textsurface = font.render(text, True, gfcolor).convert_alpha()
+def render(text, font, gfcolor=pygame.Color('dodgerblue'), ocolor=(255, 255, 255), opx=2, antialias=False):
+    textsurface = font.render(text, antialias, gfcolor).convert_alpha()
     w = textsurface.get_width() + 2 * opx
     h = font.get_height()
 
@@ -34,7 +34,7 @@ def render(text, font, gfcolor=pygame.Color('dodgerblue'), ocolor=(255, 255, 255
 
     surf = osurf.copy()
 
-    osurf.blit(font.render(text, True, ocolor).convert_alpha(), (0, 0))
+    osurf.blit(font.render(text, antialias, ocolor).convert_alpha(), (0, 0))
 
     for dx, dy in _circlepoints(opx):
         surf.blit(osurf, (dx + opx, dy + opx))

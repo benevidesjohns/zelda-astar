@@ -2,13 +2,9 @@ import pygame
 import sys
 from PIL import Image
 
-from .outlined_font import render
+from .utils.outlined_font import render
+from .utils.constants import FORMAT, FONT_GAME_END, BORDER_TEXT_COLOR, TEXT_COLOR
 
-FORMAT = "RGBA"
-BORDER_TEXT_COLOR = (70, 70, 70)
-TEXT_COLOR = (120, 235, 20)
-pygame.font.init()
-FONT = pygame.font.SysFont('courier new', 25, True, False)
 
 def pil_to_game(img):
     data = img.tobytes("raw", FORMAT)
@@ -20,7 +16,7 @@ def get_gif_frame(img, frame):
     return img.convert(FORMAT)
 
 
-def get_formatted_text(text, statistic, type):
+def get_formatted_text(text, dots, statistic, type):
     if(type == 'list'):
         formatted_statistic = ' --> '.join([statistic[i] for i in range(len(statistic))])
     elif(type == 'float'):
@@ -28,7 +24,7 @@ def get_formatted_text(text, statistic, type):
     elif(type == 'int'):
         formatted_statistic = f'{statistic}'
 
-    return f'{text}: {formatted_statistic}' if text else formatted_statistic
+    return f'{text} {". " * dots} {formatted_statistic}'
 
 
 def run(gif_image, statistics):
@@ -37,10 +33,9 @@ def run(gif_image, statistics):
     (best_order, best_order_type) = statistics['best_order']
 
     texts = []
-    texts.append(get_formatted_text('Custo total', total_cost, total_cost_type))
-    texts.append(get_formatted_text('Tempo decorrido', elapsed_time, elapsed_time_type))
-    texts.append('Ordem das dungeons:')
-    texts.append(get_formatted_text('', best_order, best_order_type))
+    texts.append(get_formatted_text('CUSTO  TOTAL', 30, total_cost, total_cost_type))
+    texts.append(get_formatted_text('TEMPO  DECORRIDO ', 21, elapsed_time, elapsed_time_type))
+    texts.append(get_formatted_text('MELHOR  CAMINHO', 11, best_order, best_order_type))
     
     # Carrega a imagem do gif
     gif_img = Image.open(gif_image)
@@ -74,20 +69,24 @@ def run(gif_image, statistics):
         current_frame = (current_frame + 1) % gif_img.n_frames
 
         rect = pygame.Surface((gif_img.width, gif_img.height)) 
-        rect.set_alpha(128)
+        rect.set_alpha(80)
         rect.fill((255, 255, 255))
         screen.blit(rect, (0, 0))
 
         # Desenha as estatísticas na tela
-        title = render('Parabéns! Você venceu!', FONT, TEXT_COLOR, BORDER_TEXT_COLOR)
+        title = render('PARABÉNS!  VOCÊ  VENCEU!', FONT_GAME_END, TEXT_COLOR, BORDER_TEXT_COLOR)
         title_rect = title.get_rect(center=(gif_img.width // 2, 20))
         screen.blit(title, title_rect)
 
         for i, text in enumerate(texts):
-            screen.blit(render(text, FONT, TEXT_COLOR, BORDER_TEXT_COLOR), (20, 142 + 30*i))
+            screen.blit(render(text, FONT_GAME_END, TEXT_COLOR, BORDER_TEXT_COLOR), (20, 142 + 35*i))
 
-        credits = render('Feito com <3 by: William e João', FONT, TEXT_COLOR, BORDER_TEXT_COLOR)
-        credits_rect = credits.get_rect(center=(gif_img.width // 2, gif_img.height - 40))
+        game = render('ZELDA  ASTAR', FONT_GAME_END, TEXT_COLOR, BORDER_TEXT_COLOR)
+        game_rect = game.get_rect(center=(gif_img.width // 2, gif_img.height - 50))
+        screen.blit(game, game_rect)
+
+        credits = render('FEITO COM  <3  BY:  WILLIAM  E  JOÃO', FONT_GAME_END, TEXT_COLOR, BORDER_TEXT_COLOR)
+        credits_rect = credits.get_rect(center=(gif_img.width // 2, gif_img.height - 20))
         screen.blit(credits, credits_rect)
         
         pygame.display.update()

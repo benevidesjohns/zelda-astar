@@ -4,7 +4,8 @@ import sys
 
 from src.game import Game
 from src.player import make_start
-from src.utils import gif
+from src import gif
+from src.utils.best_order_path import set_best_order
 
 
 # Captura a posicao que o usuario clicou no grid
@@ -17,6 +18,7 @@ def get_clicked_pos(pos, rows, width):
 if __name__ == '__main__':
 
     game = Game()
+    start_time = 0
 
     while True:
 
@@ -43,7 +45,15 @@ if __name__ == '__main__':
                 print(f'\nStart Point = ({x}, {y})')
 
                 # Define a melhor ordem para passar pelas dungeons
-                game.set_best_order()
+                settings = set_best_order(game.current_start_point, game.points, game.map)
+
+                game.best_order = settings['best_order']
+                game.path = settings['path']
+                game.current_path = settings['current_path']
+                game.order = settings['order']
+                game.current_order = settings['current_order']
+                game.current_end_point = settings['current_end_point']
+
                 game.started = True
 
             # Executa ação do player ao trocar entre os mapas (dungeon/hyrule)
@@ -74,7 +84,7 @@ if __name__ == '__main__':
 
                 total_cost = game.total_cost
                 elapsed_time = end_time - start_time
-                best_order = [x.replace('dungeon_', 'dg ') for x in game.best_order if 'dungeon_' in x]
+                best_order = [x.replace('dungeon_', 'DG ') for x in game.best_order if 'dungeon_' in x]
 
                 # Armazena as estatísticas do game
                 statistics = {

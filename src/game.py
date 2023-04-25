@@ -1,11 +1,11 @@
-from itertools import permutations
 import pygame
-import sys
 
 from .template.maps import hyrule, dungeon_1, dungeon_2, dungeon_3
-from .player import Player, make_start
+from .player import make_start, move
 from .utils.algorithm import algorithm
 from .utils.mixer import Mixer
+from .utils.outlined_font import render
+from .utils.constants import FONT, BORDER_TEXT_COLOR, TEXT_COLOR
 
 
 class Game:
@@ -22,7 +22,6 @@ class Game:
         self.started = False
         self.running = False
         self.finished = False
-        self.paused = False
 
         # Pontos de referência
         self.current_start_point = start_point
@@ -57,7 +56,6 @@ class Game:
         self.mixer.play_hyrule()
 
     # Define as propriedades do mapa
-
     def make_map(self, map):
         self.map = map
 
@@ -117,104 +115,6 @@ class Game:
             self.mixer.play_dungeon(3)
             self.toggle_state = False
 
-    # Define a melhor ordem para passar pelas dungeons
-    def set_best_order(self):
-
-        # Pontos de referência
-        start = self.current_start_point
-        dungeons = [self.points[f'dungeon_{i}'] for i in range(1, 4)]
-        end = self.points['entrada_lost_woods']
-
-        # Obtem o melhor caminho entre os pontos de referência
-        paths = {}
-        for i in range(len(dungeons)):
-            paths[f'start-dungeon_{i+1}'] = algorithm(
-                self.map, self.map.get_node(start),
-                self.map.get_node(dungeons[i])
-            )
-            paths[f'dungeon_{i+1}-entrada_lost_woods'] = algorithm(
-                self.map, self.map.get_node(dungeons[i]),
-                self.map.get_node(end)
-            )
-            for j in range(i+1, len(dungeons)):
-                paths[f'dungeon_{i+1}-dungeon_{j+1}'] = algorithm(
-                    self.map, self.map.get_node(dungeons[i]),
-                    self.map.get_node(dungeons[j])
-                )
-                paths[f'dungeon_{j+1}-dungeon_{i+1}'] = list(
-                    reversed(paths[f'dungeon_{i+1}-dungeon_{j+1}'])
-                )
-
-        print('\n----------------------------------------------- CUSTOS ----------------------------------------------\n')
-
-        # Calcula os custos para cada caminho
-        for key, nodes in paths.items():
-            path_cost = sum(list(map(lambda node: node.cost, nodes)))
-            self.costs[key] = path_cost - nodes[-1].cost
-            (start, end) = key.split("-")
-            start = '{:9}'.format(start)
-            print(f'cost: {self.costs[key]}, path: {start} --> {end}')
-
-        # Lista todas as ordens de caminhos possíveis
-        permuts = list(permutations(['dungeon_1', 'dungeon_2', 'dungeon_3']))
-        orders = list(map(
-            lambda order: ['start'] + list(order) + ['entrada_lost_woods'],
-            permuts
-        ))
-
-        # Soma os custos para todas as ordens de caminhos possíveis
-        # e verifica a melhor ordem de caminho entre as dungeons
-        order_paths = []
-        best_cost = float("inf")
-        best_order_path_index = 0
-
-        for index, order in enumerate(orders):
-            total_cost = 0
-
-            for i in range(len(order)-1):
-                total_cost += self.costs[f'{order[i]}-{order[i+1]}']
-
-            order_paths.append({
-                'total_cost': total_cost,
-                'order': order
-            })
-
-            if total_cost < best_cost:
-                best_cost = total_cost
-                best_order_path_index = index
-
-        print('\n---------------------------------- MELHOR CAMINHO ENTRE AS DUNGEONS ---------------------------------\n')
-        print(order_paths[best_order_path_index])
-
-        self.best_order = orders[best_order_path_index].copy()
-
-        # Seleciona os paths da melhor ordem de caminho entre as dungeons
-        best_order_path = order_paths[best_order_path_index]['order']
-        best_paths = []
-        for i in range(len(best_order_path)-1):
-            best_paths.append(
-                paths[f'{best_order_path[i]}-{best_order_path[i+1]}'])
-
-        # Define o order path e o primeiro end point do mapa
-        self.path = best_paths
-        self.current_path = self.path.pop(0)
-
-        self.order = order_paths[best_order_path_index]['order']
-        self.current_order = (self.order.pop(0), self.order[0])
-
-        self.map.end_point = self.current_end_point = self.points[self.order[0]]
-        self.map.set_end_node()
-
-        print('\n------------------------------------------ OUTROS CAMINHOS ------------------------------------------\n')
-        for i in range(len(order_paths)):
-            if i != best_order_path_index:
-                print(order_paths[i], end='\n\n')
-
-        print('\n----------------------------------------- CAMINHO PERCORRIDO -----------------------------------------\n')
-        (start, end) = self.current_order
-        print(
-            f'\rtotal_cost: {self.total_cost}, cost: {self.total_cost}, {start} --> {end}', end='')
-
     # Inicia o jogo
     def start(self):
         if self.state == 'hyrule':
@@ -232,76 +132,6 @@ class Game:
 
             self.reconstruct_path(best_way, list(reversed(best_way)))
 
-    # Faz a animacao do player andando no mapa
-    def draw_player(self, path, delay, trace_color=(0, 0, 0)):
-        current_cost = 0
-        for i, node in enumerate(path):
-
-            # Gerencia os eventos do pygame
-            for event in pygame.event.get():
-
-                # Verifica as teclas do teclado
-                if event.type == pygame.KEYDOWN:
-
-                    # ESC - Encerra o jogo
-                    if event.key == pygame.K_ESCAPE:
-                        pygame.quit()
-                        sys.exit()
-
-            # Calcula o custo
-            current_cost += node.cost
-            self.total_cost += node.cost
-            (start, end) = self.current_order
-            print(
-                f'\rtotal_cost: {self.total_cost}, cost: {current_cost}, {start} --> {end}', end='')
-
-            # Desenha o player
-            player = Player(node.get_coord())
-            self.player.add(player)
-            self.player.draw(self.window)
-            pygame.display.update()
-            pygame.time.delay(delay)
-
-            # Remove o player caso não tenha chegado no final do path
-            if node != path[-1]:
-                self.player.add(node)
-                self.player.draw(self.window)
-                self.player.empty()
-
-            # Redesenha a grade em torno do node atual
-            if self.state == 'hyrule':
-                x, y = node.get_coord()
-                pygame.draw.line(
-                    self.window, (70, 70, 70), (x, y), (x+18, y)
-                )
-                pygame.draw.line(
-                    self.window, (70, 70, 70), (x, y+18), (x+18, y+18)
-                )
-                pygame.draw.line(
-                    self.window, (70, 70, 70), (x, y), (x, y+18)
-                )
-                pygame.draw.line(
-                    self.window, (70, 70, 70), (x+18, y), (x+18, y+18)
-                )
-
-            # Desenha o rastro do personagem
-            if node != path[-1]:
-                next_node = path[i+1]
-                xi, yi = node.get_coord()
-                xf, yf = next_node.get_coord()
-
-                pygame.draw.line(
-                    self.window, trace_color, (xi+9, yi+9), (xf+9, yf+9), 4
-                )
-
-            # Redesenha os artifacts
-            if not node.artifact is None and 'pingente' not in node.artifact_name:
-                node.artifact.draw(self.window)
-
-            pygame.display.update()
-
-        print('\n')
-
     # Atualiza os nodes que definem o caminho encontrado pelo algoritmo
     def reconstruct_path(self, path, reverse_path):
 
@@ -309,7 +139,7 @@ class Game:
         if self.state == 'hyrule':
 
             # Percorre ate o ponto final
-            self.draw_player(path=path, delay=60)
+            self.total_cost = move(self.window, self.state, self.player, self.total_cost, self.width, self.current_order, path)
 
             # Entra na dungeon, caso o player nao tenha chegado ao objetivo final
             if self.order[0] != 'entrada_lost_woods':
@@ -336,8 +166,8 @@ class Game:
                     self.map, self.map.start_node, self.map.end_node)
 
                 self.mixer.fadeout_hyrule()
-                pygame.time.delay(500)  # Pausa dramática
-                self.draw_player(path=final_path, delay=200)
+                # pygame.time.delay(500)  # Pausa dramática
+                self.total_cost = move(self.window, self.state, self.player, self.total_cost, self.width, self.current_order, final_path, 200)
                 self.mixer.play_winner()
 
                 self.finished = True
@@ -346,7 +176,7 @@ class Game:
         # Nas Dungeons -> pega o pingente e volta para Hyrule
         else:
             # Vai até o pingente
-            self.draw_player(path=path, delay=50)
+            self.total_cost = move(self.window, self.state, self.player, self.total_cost, self.width, self.current_order, path)
 
             # Pega o pingente
             (start, end) = self.current_order
@@ -356,11 +186,10 @@ class Game:
                 f'\rtotal_cost: {self.total_cost}, cost: 0, pingente --> saida_{start.split("entrada_")[1]}', end='')
 
             self.mixer.play_get_pingente()
-            pygame.time.delay(2000)
+            # pygame.time.delay(2000)
 
             # Volta para a entrada da dungeon
-            self.draw_player(path=reverse_path, delay=50,
-                             trace_color=(255, 255, 255))
+            self.total_cost = move(self.window, self.state, self.player, self.total_cost, self.width, self.current_order, reverse_path, 60, (255, 255, 255))
 
             # Sai da dungeon
             (start, end) = self.current_order
@@ -411,6 +240,15 @@ class Game:
         # Desenha o personagem
         if self.player:
             self.player.draw(self.window)
+
+        rect = pygame.Surface((225, 30))
+        rect.fill((50, 50, 50))
+        self.window.blit(rect, (self.width - 225, 0))
+
+        text_total_cost = '{:4}'.format(self.total_cost)
+        title = render(f'CUSTO TOTAL: {text_total_cost},  CUSTO:    0', FONT, TEXT_COLOR, BORDER_TEXT_COLOR)
+        title_rect = title.get_rect(center=(self.width - 110, 15))
+        self.window.blit(title, title_rect)
 
         # Atualiza a tela
         pygame.display.update()
