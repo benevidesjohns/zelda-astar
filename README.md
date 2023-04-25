@@ -20,11 +20,17 @@
 <p>Ferramentas utilizadas para o desenvolvimento do jogo:</p>
 
 - [Visual Studio Code](https://code.visualstudio.com/download/)
-- [Python 3.11.2](https://www.python.org/downloads/)
+- [Python ^3.9.13](https://www.python.org/downloads/)
+- [Pygame](https://www.pygame.org/docs/)
 
 <p>Bibliotecas:</p>
-```bash
 
+```bash
+autopep8==2.0.2
+Pillow==9.5.0
+pycodestyle==2.10.0
+pygame==2.3.0
+tomli==2.0.1
 ```
 
 <p>Instruções:</p>
