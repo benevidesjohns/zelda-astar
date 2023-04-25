@@ -11,10 +11,10 @@
 </p>
 
 <div> Mapa de <i>Hyrule</i></div>
-
+<img src="assets/img/maps/mapa_hyrule.jpg"/>
 
 <div> Mapa das <i>Dungeons</i></div>
- 
+<img src="assets/img/maps/mapa_dungeon.jpg"/>
 
 <h3>:clipboard: Requisitos</h3>
 <p>Ferramentas utilizadas para o desenvolvimento do jogo:</p>
