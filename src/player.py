@@ -1,7 +1,7 @@
 import pygame
 import sys
 
-from .utils.constants import CPG11, GRAY, RED, BLACK, NODE_SIZE
+from .utils.constants import CPG11, BLACK, RED, NODE_SIZE
 from .utils.outlined_font import render
 
 
@@ -54,16 +54,16 @@ def move(window, state, player_group, total_cost, width, current_order, path, de
         if state == 'hyrule':
             x, y = node.get_coord()
             pygame.draw.line(
-                window, GRAY, (x, y), (x+NODE_SIZE, y)
+                window, BLACK, (x, y), (x+NODE_SIZE, y)
             )
             pygame.draw.line(
-                window, GRAY, (x, y+NODE_SIZE), (x+NODE_SIZE, y+NODE_SIZE)
+                window, BLACK, (x, y+NODE_SIZE), (x+NODE_SIZE, y+NODE_SIZE)
             )
             pygame.draw.line(
-                window, GRAY, (x, y), (x, y+NODE_SIZE)
+                window, BLACK, (x, y), (x, y+NODE_SIZE)
             )
             pygame.draw.line(
-                window, GRAY, (x+NODE_SIZE, y), (x+NODE_SIZE, y+NODE_SIZE)
+                window, BLACK, (x+NODE_SIZE, y), (x+NODE_SIZE, y+NODE_SIZE)
             )
 
         # Desenha o rastro do personagem
@@ -89,7 +89,7 @@ def move(window, state, player_group, total_cost, width, current_order, path, de
 
         text_total_cost = '{:4}'.format(total_cost)
         title = render(
-            f'CUSTO TOTAL: {text_total_cost},  CUSTO: {current_cost}', CPG11, RED, GRAY)
+            f'CUSTO TOTAL: {text_total_cost},  CUSTO: {current_cost}', CPG11, RED, BLACK)
         title_rect = title.get_rect(center=(width - 110, 15))
         window.blit(title, title_rect)
 

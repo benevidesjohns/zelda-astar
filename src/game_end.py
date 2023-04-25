@@ -85,7 +85,7 @@ def run(gif_image, statistics):
         game_rect = game.get_rect(center=(gif_img.width // 2, gif_img.height - 50))
         screen.blit(game, game_rect)
 
-        credits = render('FEITO COM  <3  BY:  WILLIAM  E  JOÃO', CPG25, RED, BLACK)
+        credits = render('FEITO COM  <3  POR:  WILLIAM  E  JOÃO', CPG25, RED, BLACK)
         credits_rect = credits.get_rect(center=(gif_img.width // 2, gif_img.height - 20))
         screen.blit(credits, credits_rect)
         
