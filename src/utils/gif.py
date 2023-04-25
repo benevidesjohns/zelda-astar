@@ -5,10 +5,10 @@ from PIL import Image
 from .outlined_font import render
 
 FORMAT = "RGBA"
-BLACK_COLOR = (70, 70, 70)
-GREEN_COLOR = (120, 235, 20)
+BORDER_TEXT_COLOR = (70, 70, 70)
+TEXT_COLOR = (120, 235, 20)
 pygame.font.init()
-FONT = pygame.font.SysFont('arial', 30, True, False)
+FONT = pygame.font.SysFont('courier new', 25, True, False)
 
 def pil_to_game(img):
     data = img.tobytes("raw", FORMAT)
@@ -29,8 +29,6 @@ def get_formatted_text(text, statistic, type):
         formatted_statistic = f'{statistic}'
 
     return f'{text}: {formatted_statistic}' if text else formatted_statistic
-    # text_render = f'{text}: {formatted_statistic}' if text else formatted_statistic
-    # return FONT.render(text_render, True, BLACK_COLOR)
 
 
 def run(gif_image, statistics):
@@ -81,14 +79,14 @@ def run(gif_image, statistics):
         screen.blit(rect, (0, 0))
 
         # Desenha as estatísticas na tela
-        title = render('Parabéns! Você venceu!', FONT, GREEN_COLOR, BLACK_COLOR)
+        title = render('Parabéns! Você venceu!', FONT, TEXT_COLOR, BORDER_TEXT_COLOR)
         title_rect = title.get_rect(center=(gif_img.width // 2, 20))
         screen.blit(title, title_rect)
 
         for i, text in enumerate(texts):
-            screen.blit(render(text, FONT, GREEN_COLOR, BLACK_COLOR), (20, 142 + 30*i))
+            screen.blit(render(text, FONT, TEXT_COLOR, BORDER_TEXT_COLOR), (20, 142 + 30*i))
 
-        credits = render('Feito com <3 by: William e João', FONT, GREEN_COLOR, BLACK_COLOR)
+        credits = render('Feito com <3 by: William e João', FONT, TEXT_COLOR, BORDER_TEXT_COLOR)
         credits_rect = credits.get_rect(center=(gif_img.width // 2, gif_img.height - 40))
         screen.blit(credits, credits_rect)
         

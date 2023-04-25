@@ -1,9 +1,11 @@
+from itertools import permutations
+import pygame
+import sys
+
 from .template.maps import hyrule, dungeon_1, dungeon_2, dungeon_3
 from .player import Player, make_start
 from .utils.algorithm import algorithm
-from itertools import permutations
-from pygame import mixer
-import pygame
+from .utils.mixer import Mixer
 
 
 class Game:
@@ -20,6 +22,7 @@ class Game:
         self.started = False
         self.running = False
         self.finished = False
+        self.paused = False
 
         # Pontos de referência
         self.current_start_point = start_point
@@ -46,32 +49,15 @@ class Game:
         self.nodes_group = pygame.sprite.Group()
         self.player = None
 
-        # Pygame Mixer
-        self.hyrule_song = self.create_song('lost_woods')
-        self.dungeon_song1 = self.create_song('song_of_storms', 0.7)
-        self.dungeon_song2 = self.create_song('meet_zelda_again', 0.7)
-        self.dungeon_song3 = self.create_song('mayors_meeting', 0.7)
-        self.get_pingente = self.create_song('small_item_get', 0.5)
-        # self.winner_song = self.create_song('ikana_castle')
-        self.winner_song = self.create_song('hyrule')
-
-        self.ch_hyrule = mixer.Channel(0)
-        self.ch_dungeon = [mixer.Channel(i) for i in range(1, 4)]
-        self.ch_winner = mixer.Channel(4)
-        self.ch_pingente = mixer.Channel(5)
+        # Mixer
+        self.mixer = Mixer()
 
         # Constroi o mapa
         self.make_map(self.map)
-        self.ch_hyrule.play(self.hyrule_song)
-
-    # Criador de sons
-    def create_song(self, path, volume=1):
-        mixer.init()
-        sound = mixer.Sound(f'assets/audio/{path}.mp3')
-        sound.set_volume(volume)
-        return sound
+        self.mixer.play_hyrule()
 
     # Define as propriedades do mapa
+
     def make_map(self, map):
         self.map = map
 
@@ -113,35 +99,22 @@ class Game:
             self.make_map(
                 hyrule(self.current_start_point, self.current_end_point)
             )
-
-            for ch_dungeon in self.ch_dungeon:
-                ch_dungeon.stop()
-            self.ch_hyrule.unpause()
-
+            self.mixer.unpause_hyrule()
             self.toggle_state = False
 
         if self.state == 'dungeon_1' and self.toggle_state:
             self.make_map(dungeon_1())
-
-            self.ch_hyrule.pause()
-            self.ch_dungeon[0].play(self.dungeon_song1)
-
+            self.mixer.play_dungeon(1)
             self.toggle_state = False
 
         if self.state == 'dungeon_2' and self.toggle_state:
             self.make_map(dungeon_2())
-
-            self.ch_hyrule.pause()
-            self.ch_dungeon[1].play(self.dungeon_song2)
-
+            self.mixer.play_dungeon(2)
             self.toggle_state = False
 
         if self.state == 'dungeon_3' and self.toggle_state:
             self.make_map(dungeon_3())
-
-            self.ch_hyrule.pause()
-            self.ch_dungeon[2].play(self.dungeon_song3)
-
+            self.mixer.play_dungeon(3)
             self.toggle_state = False
 
     # Define a melhor ordem para passar pelas dungeons
@@ -260,9 +233,20 @@ class Game:
             self.reconstruct_path(best_way, list(reversed(best_way)))
 
     # Faz a animacao do player andando no mapa
-    def draw_player(self, path, delay, trace_color=(0,0,0)):
+    def draw_player(self, path, delay, trace_color=(0, 0, 0)):
         current_cost = 0
         for i, node in enumerate(path):
+
+            # Gerencia os eventos do pygame
+            for event in pygame.event.get():
+
+                # Verifica as teclas do teclado
+                if event.type == pygame.KEYDOWN:
+
+                    # ESC - Encerra o jogo
+                    if event.key == pygame.K_ESCAPE:
+                        pygame.quit()
+                        sys.exit()
 
             # Calcula o custo
             current_cost += node.cost
@@ -326,7 +310,6 @@ class Game:
 
             # Percorre ate o ponto final
             self.draw_player(path=path, delay=60)
-            # self.draw_player(path=path, delay=1)
 
             # Entra na dungeon, caso o player nao tenha chegado ao objetivo final
             if self.order[0] != 'entrada_lost_woods':
@@ -352,16 +335,11 @@ class Game:
                 final_path = algorithm(
                     self.map, self.map.start_node, self.map.end_node)
 
-                # self.ch_hyrule.fadeout(3300)
-                self.ch_hyrule.fadeout(500)
-                self.ch_hyrule.stop()
-                self.ch_winner.play(self.winner_song)
-                pygame.time.delay(2000)  # Pausa dramática
-                # pygame.time.delay(500)  # Pausa dramática
-                self.draw_player(path=final_path, delay=450)
+                self.mixer.fadeout_hyrule()
+                pygame.time.delay(500)  # Pausa dramática
+                self.draw_player(path=final_path, delay=200)
+                self.mixer.play_winner()
 
-                # self.ch_hyrule.stop()
-                # self.ch_winner.play(self.winner_song)
                 self.finished = True
                 self.running = False
 
@@ -376,17 +354,13 @@ class Game:
                 'pingente', f'saida_{start.split("entrada_")[1]}')
             print(
                 f'\rtotal_cost: {self.total_cost}, cost: 0, pingente --> saida_{start.split("entrada_")[1]}', end='')
-            for ch in self.ch_dungeon:
-                ch.set_volume(0.2)
 
-            self.ch_pingente.play(self.get_pingente, maxtime=2000)
+            self.mixer.play_get_pingente()
             pygame.time.delay(2000)
 
-            for ch in self.ch_dungeon:
-                ch.set_volume(0.7)
-
             # Volta para a entrada da dungeon
-            self.draw_player(path=reverse_path, delay=50, trace_color=(255,255,255))
+            self.draw_player(path=reverse_path, delay=50,
+                             trace_color=(255, 255, 255))
 
             # Sai da dungeon
             (start, end) = self.current_order
@@ -411,7 +385,7 @@ class Game:
                 )
 
     # Desenha na tela
-    def draw(self, delay=10):
+    def draw(self):
         # Desenha os nodes na tela
         self.nodes_group.draw(self.window)
 
@@ -440,4 +414,3 @@ class Game:
 
         # Atualiza a tela
         pygame.display.update()
-        pygame.time.delay(delay)

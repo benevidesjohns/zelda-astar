@@ -1,9 +1,11 @@
+import pygame
+import time
+import sys
+
 from src.game import Game
 from src.player import make_start
 from src.utils import gif
-import pygame
-import sys
-import time
+
 
 # Captura a posicao que o usuario clicou no grid
 def get_clicked_pos(pos, rows, width):
@@ -43,7 +45,6 @@ if __name__ == '__main__':
                 # Define a melhor ordem para passar pelas dungeons
                 game.set_best_order()
                 game.started = True
-                start_time = time.time()
 
             # Executa ação do player ao trocar entre os mapas (dungeon/hyrule)
             if event.type == pygame.WINDOWFOCUSGAINED and game.started and not game.finished:
@@ -55,6 +56,7 @@ if __name__ == '__main__':
                 # SPACE - Inicia o jogo
                 if event.key == pygame.K_SPACE and game.started and not game.running and not game.finished:
                     game.start()
+                    start_time = time.time()
                     game.running = True
 
                 # R - Reinicia o jogo
